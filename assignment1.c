@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define LSIZ 128 
 #define RSIZ 10 
@@ -13,6 +14,7 @@ struct process{
     int ioFreq;
     int ioDur;
     int ioCounter;
+    char state[10];
 };
 
 
@@ -24,15 +26,18 @@ int main()
     int i = 0;
     int j = 0;
     int numCommands = 0;
+    double cpu_time_used;
+    int clock = 0;
 	
+
 
     fptr = fopen("input.txt", "r");
 
     while(fgets(line[i], 200, fptr)) 
-  {
-    line[i][strlen(line[i]) - 1] = '\0';
-    i++;
-  }
+    {
+        line[i][strlen(line[i]) - 1] = '\0';
+        i++;
+    }
     
     numCommands = i;
     struct process arr_process[numCommands];
@@ -40,11 +45,22 @@ int main()
     for(i=0;i<numCommands;i++)
     {
         sscanf(line[i] , "%i %i %i %i %i", &arr_process[i].pid, &arr_process[i].arrivalTime, &arr_process[i].cpuTime, &arr_process[i].ioFreq, &arr_process[i].ioDur);
-        printf("%i\n", arr_process[i].pid);
-        printf("%i\n",arr_process[i].arrivalTime);
+        strcpy(arr_process[i].state,"NEW");
     }
 
+    clock_t start, end;
 
+    while(1){
+        printf("%i",clock);
+        for(i=0;i<numCommands;i++)
+        {
+
+            if(clock >= arr_process[i].arrivalTime && strcmp(arr_process[i].state,"NEW")==0){
+                strcpy(arr_process[i].state,"READY");
+            }
+        }
+        clock++;
+    }
     
     return 0;
 }
