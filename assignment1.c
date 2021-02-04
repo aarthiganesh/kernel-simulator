@@ -7,14 +7,15 @@
 #define RSIZ 10 
 
 struct process{
-    int pid;
-    int arrivalTime;
-    int cpuTime;
-    int cpuCounter;
-    int ioFreq;
-    int ioDur;
-    int ioCounter;
-    char state[10];
+    int pid; // pid
+    int arrivalTime; // arrival time
+    int cpuTime; //cpu time
+    int ioFreq; // io frequency
+    int ioDur; // io duration
+    char state[10]; //state of process
+
+    int cpuCounter; // increments up as soon as process starts running
+    int ioCounter; // increments when process is in waiting
 };
 
 
@@ -26,8 +27,9 @@ int main()
     int i = 0;
     int j = 0;
     int numCommands = 0;
-    double cpu_time_used;
+    int termCommands = 0;
     int clock = 0;
+    bool threadAvail = True; // is true when the process thread is available
 	
 
 
@@ -48,17 +50,50 @@ int main()
         strcpy(arr_process[i].state,"NEW");
     }
 
+    for(i=0; i<STUDENTS; i++)
+    {
+        for(j=i; j<STUDENTS; j++)
+        {
+            if(stud[i].age < stud[j].age)
+            {
+                temp = stud[i];
+                stud[i] = stud[j];
+                stud[j] = temp;
+            }
+        }
+    }
+
     clock_t start, end;
 
     while(1){
         printf("%i",clock);
+        // state changes from NEW to READY when clock hits Arrival Time
+        // state changes from 
         for(i=0;i<numCommands;i++)
         {
-
+            // check if the process is ready
             if(clock >= arr_process[i].arrivalTime && strcmp(arr_process[i].state,"NEW")==0){
                 strcpy(arr_process[i].state,"READY");
             }
+
+            // check if process is complete
+            if(arr_process[i].cpuCounter==arr_process[i].cpuTime){
+                strcpy(arr_process[i].state,"TERMINATED");
+                termCommands ++;
+                if(termCommands == numCommands){
+                    exit;
+                }
+            }
+            // check if process needs to be in io
+            // check if proces needs to go back to ready
+            // check ready to running
         }
+
+        // Start Processes
+        for(){
+
+        }
+
         clock++;
     }
     
