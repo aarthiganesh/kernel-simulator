@@ -2,7 +2,6 @@
 #include <stdlib.h>
 
 int main(void){
-
     FILE *myFile;
     myFile = fopen("input.txt", "r");
 
@@ -10,8 +9,8 @@ int main(void){
     //creating a 2d array
     int pcbtable[5][2];
     int i,j;
-	int smallPid;
-	//int *arraypointer = pcbtable; 
+		int smallPid;
+		//int *arraypointer = pcbtable; 
 	
 
     if (myFile == NULL){
@@ -22,19 +21,18 @@ int main(void){
 	
 	
     for (i = 0; i < 5; i++){
-		for(j=0;j<2;j++){
-        	fscanf(myFile, "%i", &pcbtable[i][j]);
-			
-    	}
-		
-	}
+			for(j=0;j<2;j++){
+						fscanf(myFile, "%i", &pcbtable[i][j]);
+				}
+		}
 
     for (i = 0; i < 5; i++){
-		for(j=0;j<2;j++){
-        	printf("%i\n",pcbtable[i][j]);
-    	}
-	}
+			for(j=0;j<2;j++){
+						printf("%i\n",pcbtable[i][j]);
+				}
+		}
 
+		printf("%i",pcbtable[1][1]);
    
 
 	for(j=0;j<2;j++){
@@ -47,6 +45,7 @@ int main(void){
 
 	}
 	fclose(myFile);
+
 	return 0;
 	
 
