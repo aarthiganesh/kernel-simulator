@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <time.h>
 
 #define LSIZ 128 
@@ -29,9 +30,8 @@ int main()
     int numCommands = 0;
     int termCommands = 0;
     int clock = 0;
-    bool threadAvail = True; // is true when the process thread is available
+    bool threadAvail = true; // is true when the process thread is available
 	
-
 
     fptr = fopen("input.txt", "r");
 
@@ -50,18 +50,18 @@ int main()
         strcpy(arr_process[i].state,"NEW");
     }
 
-    for(i=0; i<STUDENTS; i++)
-    {
-        for(j=i; j<STUDENTS; j++)
-        {
-            if(stud[i].age < stud[j].age)
-            {
-                temp = stud[i];
-                stud[i] = stud[j];
-                stud[j] = temp;
-            }
-        }
-    }
+    // for(i=0; i<STUDENTS; i++)
+    // {
+    //     for(j=i; j<STUDENTS; j++)
+    //     {
+    //         if(stud[i].age < stud[j].age)
+    //         {
+    //             temp = stud[i];
+    //             stud[i] = stud[j];
+    //             stud[j] = temp;
+    //         }
+    //     }
+    // }
 
     clock_t start, end;
 
@@ -80,9 +80,9 @@ int main()
             if(arr_process[i].cpuCounter==arr_process[i].cpuTime){
                 strcpy(arr_process[i].state,"TERMINATED");
                 termCommands ++;
-                if(termCommands == numCommands){
-                    exit;
-                }
+                // if(termCommands == numCommands){
+                //     exit;
+                // }
             }
             // check if process needs to be in io
             // check if proces needs to go back to ready
@@ -90,9 +90,9 @@ int main()
         }
 
         // Start Processes
-        for(){
+        // for(){
 
-        }
+        // }
 
         clock++;
     }
