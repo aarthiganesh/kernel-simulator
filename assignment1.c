@@ -47,6 +47,7 @@ int main()
     char line[RSIZ][LSIZ];
 	char fname [20];
     FILE *fptr = NULL; 
+	FILE *outfile = NULL;
     int i = 0;
     int j = 0;
     int numCommands = 0;
@@ -65,6 +66,7 @@ int main()
 	
 
     fptr = fopen("input.txt", "r");
+	outfile = fopen("output.txt", "w"); //create and open output.txt file to write
 
     while(fgets(line[i], 200, fptr)) 
     {
@@ -98,9 +100,10 @@ int main()
         }
     }
 
+
     printf("Number of commands: %i\n",numCommands);
 
-    while(1){
+    while(clock<200){
         // printf("%i\t",clock);
         // Start Processes
         for(i=0;i<numCommands;i++)
@@ -110,6 +113,7 @@ int main()
                 strcpy(arr_process[i].oldState,"NEW");
                 strcpy(arr_process[i].currentState,"READY");
                 printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+				fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
                 if(i==0){
                     start = true;
                 }
@@ -123,9 +127,9 @@ int main()
                 if(arr_process[i].cpuCounter==arr_process[i].cpuTime){
                     strcpy(arr_process[i].oldState,"RUNNING");
                     strcpy(arr_process[i].currentState,"TERMINATED");
-                    completedCommands ++;
                     threadAvail = true;
                     printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+					fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
                     if(completedCommands==numCommands){
                         exit(1);
                     }
@@ -137,6 +141,7 @@ int main()
                     strcpy(arr_process[i].currentState,"WAITING");
                     threadAvail = true;
                     printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+					fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
                 }
                 
 
@@ -152,6 +157,7 @@ int main()
                 strcpy(arr_process[i].oldState,"WAITING");
                 strcpy(arr_process[i].currentState,"READY");
                 printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+				fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
             }
         }
 
@@ -159,6 +165,8 @@ int main()
             start = false;
             running = true;
             currentProcess = 0;
+            nextProcess = 1;
+            processOnHold = 1;
             strcpy(arr_process[currentProcess].oldState,"READY");
             strcpy(arr_process[currentProcess].currentState,"RUNNING");
             printf("%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
@@ -176,9 +184,12 @@ int main()
                         strcpy(arr_process[i].currentState,"RUNNING");
                         threadAvail = false;
                         printf("%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
+						fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
                         break;
                     }
                 }
+
+            
             }
         }
 

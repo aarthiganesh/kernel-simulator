@@ -71,9 +71,6 @@ int main()
         arr_process[i].ioDurationCounter=0;
         arr_process[i].ioFrequencyCounter=0;
         arr_process[i].cpuCounter=0;
-		
-		
-		fprintf(outfile,"%i %s \n",arr_process[i].pid,arr_process[i].currentState);
     }
 
 
