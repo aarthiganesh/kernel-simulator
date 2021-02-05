@@ -82,7 +82,6 @@ int main(void)
 	
         for(i=0;i<numCommands;i++)
         {
-			
             // check if the process is ready
 			//using the first come first serve idea 
             while(clock >= arr_process[i].arrivalTime && strcmp(arr_process[i].state,"NEW")==0 &&(threadAvail)){
@@ -90,8 +89,6 @@ int main(void)
 				strcpy(arr_process[i].newstate,"RUNNING");
 				printf("%i %i %s %s\n",clock,arr_process[i].pid,arr_process[i].oldstate,arr_process[i].newstate);
 				threadAvail = false;
-				
-				
 			}
 			while (threadAvail == false){
 				arr_process[i].ioCounter++;
