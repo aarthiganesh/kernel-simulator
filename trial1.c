@@ -12,35 +12,48 @@ struct process{
     int arrivalTime; // arrival time
     int cpuTime; //cpu time
     int ioFreq; // io frequency
-    int ioDur; // io duration
-    char state[10]; //state of process
-	char oldstate[10];
-	char newstate[10];
+    int ioDuration; // io duration
+    char oldState[11];
+    char currentState[11]; //state of process
 
     int cpuCounter; // increments up as soon as process starts running
-    int ioCounter; // increments when process is running so that interrupt is generated every 20 ticks
-	
-	bool iohandle; //initially there are no interrupts 
+    int ioDurationCounter; // increments when process is in waiting
+    int ioFrequencyCounter;
+};
+
+struct eventList{
+    int clock;
+    int pid;
+    char oldState[10];
+    char currentState[10];
 };
 
 
-int main(void)
+int main()
 {
     char line[RSIZ][LSIZ];
 	char fname [20];
     FILE *fptr = NULL; 
+	FILE *outfile = NULL;
     int i = 0;
     int j = 0;
     int numCommands = 0;
-    int termCommands = 0;
     int clock = 0;
-	int ioduration =0;//increments when process is in waiting
     bool threadAvail = true; // is true when the process thread is available
-	
-	//int interruptclock =0;
+    bool iohandle = false; //initially there are no interrupts 
+    bool start = false;
+    bool running = false;
+    struct process temp;
 
+    int currentProcess=0;
+    int processOnHold=0;
+    int nextProcess=0;
+    int completedCommands = 0;
+    int tempProcess=0;
+	
 
     fptr = fopen("input.txt", "r");
+	outfile = fopen("output.txt", "w"); //create and open output.txt file to write
 
     while(fgets(line[i], 200, fptr)) 
     {
@@ -53,122 +66,110 @@ int main(void)
 
     for(i=0;i<numCommands;i++)
     {
-        sscanf(line[i] , "%i %i %i %i %i", &arr_process[i].pid, &arr_process[i].arrivalTime, &arr_process[i].cpuTime, &arr_process[i].ioFreq, &arr_process[i].ioDur);
-        strcpy(arr_process[i].state,"NEW");
-		arr_process[i].ioCounter = 0;
-
-		arr_process[i].iohandle = false;
-		printf("%i %s \n",arr_process[i].pid,arr_process[i].state);
-    }
-	
-	////find smallest arrivaltime to determine which process goes first
-    //for(j=0; j<numCommands; j++)
-     //{
-     	//if(arr_process[j].pid < arr_process[j+1].pid)
-        //{
-        	//tostartprocess[j] = arr_process[j].pid;
-            //tostartprocess[j+1] = arr_process[j+1].pid;
-        //}
-		//printf("array %i \n",tostartprocess[j]);
-         
-     //}
-
-    //clock_t start, end;
-
-   while(clock<50){
-        //printf("%i",clock);
-        // state changes from NEW to READY when clock hits Arrival Time
-        // state changes from 
+        sscanf(line[i] , "%i %i %i %i %i", &arr_process[i].pid, &arr_process[i].arrivalTime, &arr_process[i].cpuTime, &arr_process[i].ioFreq, &arr_process[i].ioDuration);
+        strcpy(arr_process[i].currentState,"NEW");
+        arr_process[i].ioDurationCounter=0;
+        arr_process[i].ioFrequencyCounter=0;
+        arr_process[i].cpuCounter=0;
 		
-	
+		
+		fprintf(outfile,"%i %s \n",arr_process[i].pid,arr_process[i].currentState);
+    }
+
+
+
+    printf("Number of commands: %i\n",numCommands);
+
+    while(clock<200){
+        // printf("%i\t",clock);
+        // Start Processes
         for(i=0;i<numCommands;i++)
         {
             // check if the process is ready
-			//using the first come first serve idea 
-            if(clock >= arr_process[i].arrivalTime && strcmp(arr_process[i].state,"NEW")==0 &&(threadAvail)){
-    			strcpy(arr_process[i].oldstate,"READY");
-				strcpy(arr_process[i].newstate,"RUNNING");
-				printf("%i %i %s %s\n",clock,arr_process[i].pid,arr_process[i].oldstate,arr_process[i].newstate);
-				threadAvail = false;
-			}
-			while (threadAvail == false){
-				arr_process[i].ioCounter++;
-				clock++;
-				
-				if(arr_process[i].ioCounter == arr_process[i].ioFreq){ //interrupt generated every iofrequency
-					arr_process[i].iohandle = true;
-					printf("iocounter is %i %i \n",arr_process[i].pid,arr_process[i].ioCounter);//increments as soon as process is in running
-					strcpy(arr_process[i].oldstate,"RUNNING"); // running waiting
-					strcpy(arr_process[i].newstate,"WAITING");
-					
-					printf("%i %i %s %s\n",clock,arr_process[i].pid,arr_process[i].oldstate,arr_process[i].newstate);
-					arr_process[i].ioCounter = 0;
-					clock++;
-					ioduration++; 
-					printf("clock is %i \n",clock);
-					threadAvail = true;	
-				} 
-			}
-			
-	//is not doing 2222 at 26, waiting for whole loop to be over!
-				while(arr_process[i].iohandle == true  && ioduration < arr_process[i].ioDur){
-					ioduration++; //
-					clock++;
-					printf("clock is %i",clock);
-					printf("duration  is %i %i\n",arr_process[i].pid,ioduration);
-				
-					if((ioduration) == (arr_process[i].ioDur)){
-						printf("ioduration %i \n",ioduration);
-						strcpy(arr_process[i].oldstate,"WAITING");
-						strcpy(arr_process[i].newstate,"READY");
-						printf("%i %i %s %s\n",clock,arr_process[i].pid,arr_process[i].oldstate,arr_process[i].newstate);
-						arr_process[i].iohandle = false;
-						ioduration = 0;
-
-					}
-				}
-			
-
-				
-			
-				
-			
-				
-
-            
+            if(clock >= arr_process[i].arrivalTime && strcmp(arr_process[i].currentState,"NEW")==0){
+                strcpy(arr_process[i].oldState,"NEW");
+                strcpy(arr_process[i].currentState,"READY");
+                printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+				fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+                if(i==0){
+                    start = true;
+                }
+            }
 
             // check if process is complete
-            if(arr_process[i].cpuCounter==arr_process[i].cpuTime){
-                strcpy(arr_process[i].state,"TERMINATED");
-                termCommands ++;
-                // if(termCommands == numCommands){
-                //     exit;
-                // }
-            }
-            // check if process needs to be in io
+            if(strcmp(arr_process[i].currentState,"RUNNING")==0){
+                arr_process[i].cpuCounter ++;
+                arr_process[i].ioFrequencyCounter++;
+                
+                if(arr_process[i].cpuCounter==arr_process[i].cpuTime){
+                    strcpy(arr_process[i].oldState,"RUNNING");
+                    strcpy(arr_process[i].currentState,"TERMINATED");
+                    threadAvail = true;
+                    printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+					fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+                }
 
-            // check if proces needs to go back to ready
-            // check ready to running
+                if(arr_process[i].ioFrequencyCounter==arr_process[i].ioFreq){
+                    arr_process[i].ioFrequencyCounter = 0;
+                    strcpy(arr_process[i].oldState,"RUNNING");
+                    strcpy(arr_process[i].currentState,"WAITING");
+                    threadAvail = true;
+                    printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+					fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+                }
+                
+
+            }
+
+            if(strcmp(arr_process[i].currentState,"WAITING")==0){
+                arr_process[i].ioDurationCounter ++;
+            }
+
+            // check if process needs to be in io
+            if(arr_process[i].ioDurationCounter== (arr_process[i].ioDuration+1) && strcmp(arr_process[i].currentState,"WAITING")==0){
+                arr_process[i].ioDurationCounter = 0;
+                strcpy(arr_process[i].oldState,"WAITING");
+                strcpy(arr_process[i].currentState,"READY");
+                printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+				fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+            }
         }
 
-        // Start Processes
-        // for(){
+        if(strcmp(arr_process[0].currentState,"READY")==0 && start){
+            start = false;
+            running = true;
+            currentProcess = 0;
+            nextProcess = 1;
+            processOnHold = 1;
+            strcpy(arr_process[currentProcess].oldState,"READY");
+            strcpy(arr_process[currentProcess].currentState,"RUNNING");
+            threadAvail = false;
+        }
 
-        // }
+        if (running){
+            if(threadAvail){
+                // printf("%i\t Thread is available\n",clock);
+                for(i=0;i<numCommands;i++){
+                    if (strcmp(arr_process[i].currentState,"READY")==0){
+                        processOnHold = currentProcess;
+                        currentProcess = i;
+                        strcpy(arr_process[i].oldState,"READY");
+                        strcpy(arr_process[i].currentState,"RUNNING");
+                        threadAvail = false;
+                        printf("%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
+						fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+                        break;
+                    }
+                }
 
-        clock++;
-		
-		
-		
+            
+            }
+        }
+
+        clock ++;
     }
-	if(clock == 100){
-		exit(0);
-	}
-    
     return 0;
 }
-
-
 
 
 // find the process with the lowest start time (counter: remaining time, interrupt intervals)
