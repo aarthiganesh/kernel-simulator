@@ -41,7 +41,7 @@ struct eventList{
     char currentState[10];
 };
 
-
+// arguments are argv[input.txt,output.txt]
 int main(int argc,char *argv[])
 {
     char line[RSIZ][LSIZ];
