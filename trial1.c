@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,7 +19,8 @@ struct process{
 
     int cpuCounter; // increments up as soon as process starts running
     int ioCounter; // increments when process is running so that interrupt is generated every 20 ticks
-	int ioduration;//increments when process is in waiting
+	
+	bool iohandle; //initially there are no interrupts 
 };
 
 
@@ -34,9 +34,9 @@ int main(void)
     int numCommands = 0;
     int termCommands = 0;
     int clock = 0;
-	
+	int ioduration =0;//increments when process is in waiting
     bool threadAvail = true; // is true when the process thread is available
-	bool iohandle = false; //initially there are no interrupts 
+	
 	//int interruptclock =0;
 
 
@@ -56,7 +56,8 @@ int main(void)
         sscanf(line[i] , "%i %i %i %i %i", &arr_process[i].pid, &arr_process[i].arrivalTime, &arr_process[i].cpuTime, &arr_process[i].ioFreq, &arr_process[i].ioDur);
         strcpy(arr_process[i].state,"NEW");
 		arr_process[i].ioCounter = 0;
-		arr_process[i].ioduration = 0;
+
+		arr_process[i].iohandle = false;
 		printf("%i %s \n",arr_process[i].pid,arr_process[i].state);
     }
 	
@@ -74,7 +75,7 @@ int main(void)
 
     //clock_t start, end;
 
-   while(clock<150){
+   while(clock<50){
         //printf("%i",clock);
         // state changes from NEW to READY when clock hits Arrival Time
         // state changes from 
@@ -84,7 +85,7 @@ int main(void)
         {
             // check if the process is ready
 			//using the first come first serve idea 
-            while(clock >= arr_process[i].arrivalTime && strcmp(arr_process[i].state,"NEW")==0 &&(threadAvail)){
+            if(clock >= arr_process[i].arrivalTime && strcmp(arr_process[i].state,"NEW")==0 &&(threadAvail)){
     			strcpy(arr_process[i].oldstate,"READY");
 				strcpy(arr_process[i].newstate,"RUNNING");
 				printf("%i %i %s %s\n",clock,arr_process[i].pid,arr_process[i].oldstate,arr_process[i].newstate);
@@ -95,32 +96,41 @@ int main(void)
 				clock++;
 				
 				if(arr_process[i].ioCounter == arr_process[i].ioFreq){ //interrupt generated every iofrequency
-					iohandle = true;
+					arr_process[i].iohandle = true;
 					printf("iocounter is %i %i \n",arr_process[i].pid,arr_process[i].ioCounter);//increments as soon as process is in running
-					strcpy(arr_process[i].oldstate,arr_process[i].newstate); // running waiting
+					strcpy(arr_process[i].oldstate,"RUNNING"); // running waiting
 					strcpy(arr_process[i].newstate,"WAITING");
 					
 					printf("%i %i %s %s\n",clock,arr_process[i].pid,arr_process[i].oldstate,arr_process[i].newstate);
 					arr_process[i].ioCounter = 0;
 					clock++;
+					ioduration++; 
 					printf("clock is %i \n",clock);
-					threadAvail = true;
-					
+					threadAvail = true;	
 				} 
-				while(iohandle){
-					arr_process[i].ioduration++; //
+			}
+			
+	//is not doing 2222 at 26, waiting for whole loop to be over!
+				while(arr_process[i].iohandle == true  && ioduration < arr_process[i].ioDur){
+					ioduration++; //
 					clock++;
-					if(arr_process[i].ioduration == 10){
-						printf("ioduration %i \n",arr_process[i].ioduration);
-						strcpy(arr_process[i].oldstate,arr_process[i].newstate);
+					printf("clock is %i",clock);
+					printf("duration  is %i %i\n",arr_process[i].pid,ioduration);
+				
+					if((ioduration) == (arr_process[i].ioDur)){
+						printf("ioduration %i \n",ioduration);
+						strcpy(arr_process[i].oldstate,"WAITING");
 						strcpy(arr_process[i].newstate,"READY");
 						printf("%i %i %s %s\n",clock,arr_process[i].pid,arr_process[i].oldstate,arr_process[i].newstate);
-						iohandle = false;
+						arr_process[i].iohandle = false;
+						ioduration = 0;
 
 					}
-
 				}
-			}
+			
+
+				
+			
 				
 			
 				
@@ -166,4 +176,3 @@ int main(void)
 // when there's an interrupt (counter: interrupt time)
 // switch processes to next available process (next lowest start time)
 // loop 
-
