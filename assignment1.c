@@ -72,22 +72,22 @@ int main()
     }
 
     // bubble sort commands in order of arrival time
-    for(i=0; i<numCommands; i++)
-    {
-        for(j=i; j<numCommands; j++)
-        {
-            if(arr_process[i].arrivalTime > arr_process[j].arrivalTime)
-            {
-                temp = arr_process[i];
-                arr_process[i] = arr_process[j];
-                arr_process[j] = temp;
-            }
-        }
-    }
+    // for(i=0; i<numCommands; i++)
+    // {
+    //     for(j=i; j<numCommands; j++)
+    //     {
+    //         if(arr_process[i].arrivalTime > arr_process[j].arrivalTime)
+    //         {
+    //             temp = arr_process[i];
+    //             arr_process[i] = arr_process[j];
+    //             arr_process[j] = temp;
+    //         }
+    //     }
+    // }
 
-    printf("%i",numCommands);
+    printf("Number of commands: %i\n",numCommands);
 
-    while(clock<150){
+    while(clock<200){
         // printf("%i\t",clock);
         // Start Processes
         for(i=0;i<numCommands;i++)
@@ -136,14 +136,6 @@ int main()
                 strcpy(arr_process[i].currentState,"READY");
                 printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
             }
-
-            // if(arr_process[i].cpuCounter==arr_process[i].cpuTime && strcmp(arr_process[i].currentState,"RUNNING")){
-            //     strcpy(arr_process[i].oldState,"RUNNING");
-            //     strcpy(arr_process[i].currentState,"TERMINATED");
-            //     completedCommands ++;
-            //     printf("%i\t%i\t%s\t%s\r",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
-            // }
-
         }
 
         if(strcmp(arr_process[0].currentState,"READY")==0 && start){
@@ -160,25 +152,37 @@ int main()
         if (running){
             if(threadAvail){
                 // printf("%i\t Thread is available\n",clock);
-                if (strcmp(arr_process[processOnHold].currentState,"READY")==0){
-                    threadAvail = false;
-                    tempProcess = currentProcess;
-                    currentProcess = processOnHold;
-                    processOnHold = tempProcess;
-                    strcpy(arr_process[currentProcess].oldState,"READY");
-                    strcpy(arr_process[currentProcess].currentState,"RUNNING");
-                    printf("%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
-                }else if (strcmp(arr_process[nextProcess].currentState,"READY")==0){
-                    printf("%i\t Thread is occupied\n",clock);
-                    threadAvail = false;
-                    currentProcess = nextProcess;
-                    if(nextProcess<numCommands){
-                        nextProcess ++;
+                for(i=0;i<numCommands;i++){
+                    if (strcmp(arr_process[i].currentState,"READY")==0){
+                        processOnHold = currentProcess;
+                        currentProcess = i;
+                        strcpy(arr_process[i].oldState,"READY");
+                        strcpy(arr_process[i].currentState,"RUNNING");
+                        threadAvail = false;
+                        printf("%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
+                        break;
                     }
-                    strcpy(arr_process[currentProcess].oldState,"READY");
-                    strcpy(arr_process[currentProcess].currentState,"RUNNING");
-                    printf("%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
                 }
+
+                // if (strcmp(arr_process[processOnHold].currentState,"READY")==0){
+                //     threadAvail = false;
+                //     tempProcess = currentProcess;
+                //     currentProcess = processOnHold;
+                //     processOnHold = tempProcess;
+                //     strcpy(arr_process[currentProcess].oldState,"READY");
+                //     strcpy(arr_process[currentProcess].currentState,"RUNNING");
+                //     printf("%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
+                // }else{
+                //     printf("%i\t Thread is occupied\n",clock);
+                //     threadAvail = false;
+                //     currentProcess = nextProcess;
+                //     if(nextProcess<numCommands){
+                //         nextProcess ++;
+                //     }
+                //     strcpy(arr_process[currentProcess].oldState,"READY");
+                //     strcpy(arr_process[currentProcess].currentState,"RUNNING");
+                //     printf("%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
+                // }
             }
         }
 
