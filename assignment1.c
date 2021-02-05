@@ -42,7 +42,7 @@ struct eventList{
 };
 
 
-int main()
+int main(int argc,char *argv[])
 {
     char line[RSIZ][LSIZ];
 	char fname [20];
@@ -65,8 +65,8 @@ int main()
     int tempProcess=0;
 	
 
-    fptr = fopen("input.txt", "r");
-	outfile = fopen("output.txt", "w"); //create and open output.txt file to write
+    fptr = fopen(argv[1], "r");
+	outfile = fopen(argv[2], "w"); //create and open output.txt file to write
 
     while(fgets(line[i], 200, fptr)) 
     {
