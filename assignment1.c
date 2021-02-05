@@ -10,6 +10,7 @@
 // Student Number: 100970339
 
 //-----------------------------------------------------------
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -84,22 +85,22 @@ int main()
     }
 
     // bubble sort commands in order of arrival time
-    // for(i=0; i<numCommands; i++)
-    // {
-    //     for(j=i; j<numCommands; j++)
-    //     {
-    //         if(arr_process[i].arrivalTime > arr_process[j].arrivalTime)
-    //         {
-    //             temp = arr_process[i];
-    //             arr_process[i] = arr_process[j];
-    //             arr_process[j] = temp;
-    //         }
-    //     }
-    // }
+    for(i=0; i<numCommands; i++)
+    {
+        for(j=i; j<numCommands; j++)
+        {
+            if(arr_process[i].arrivalTime > arr_process[j].arrivalTime)
+            {
+                temp = arr_process[i];
+                arr_process[i] = arr_process[j];
+                arr_process[j] = temp;
+            }
+        }
+    }
 
     printf("Number of commands: %i\n",numCommands);
 
-    while(clock<200){
+    while(1){
         // printf("%i\t",clock);
         // Start Processes
         for(i=0;i<numCommands;i++)
@@ -122,8 +123,12 @@ int main()
                 if(arr_process[i].cpuCounter==arr_process[i].cpuTime){
                     strcpy(arr_process[i].oldState,"RUNNING");
                     strcpy(arr_process[i].currentState,"TERMINATED");
+                    completedCommands ++;
                     threadAvail = true;
                     printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+                    if(completedCommands==numCommands){
+                        exit(1);
+                    }
                 }
 
                 if(arr_process[i].ioFrequencyCounter==arr_process[i].ioFreq){
