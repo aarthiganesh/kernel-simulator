@@ -19,7 +19,7 @@ struct process{
 
     int cpuCounter; // increments up as soon as process starts running
     int ioCounter; // increments when process is running so that interrupt is generated every 20 ticks
-	int ioduration;//increments when process is in waiting
+	
 	bool iohandle; //initially there are no interrupts 
 };
 
@@ -34,7 +34,7 @@ int main(void)
     int numCommands = 0;
     int termCommands = 0;
     int clock = 0;
-	
+	int ioduration =0;//increments when process is in waiting
     bool threadAvail = true; // is true when the process thread is available
 	
 	//int interruptclock =0;
@@ -56,7 +56,7 @@ int main(void)
         sscanf(line[i] , "%i %i %i %i %i", &arr_process[i].pid, &arr_process[i].arrivalTime, &arr_process[i].cpuTime, &arr_process[i].ioFreq, &arr_process[i].ioDur);
         strcpy(arr_process[i].state,"NEW");
 		arr_process[i].ioCounter = 0;
-		arr_process[i].ioduration = 0;
+
 		arr_process[i].iohandle = false;
 		printf("%i %s \n",arr_process[i].pid,arr_process[i].state);
     }
@@ -107,25 +107,30 @@ int main(void)
 					printf("%i %i %s %s\n",clock,arr_process[i].pid,arr_process[i].oldstate,arr_process[i].newstate);
 					arr_process[i].ioCounter = 0;
 					clock++;
+					ioduration++; 
 					printf("clock is %i \n",clock);
-					threadAvail = true;
-					
+					threadAvail = true;	
 				} 
 			}
-				while(arr_process[i].iohandle == true && threadAvail == false){
-					arr_process[i].ioduration++; //
+			
+	//is not doing 2222 at 26, waiting for whole loop to be over!
+				while(arr_process[i].iohandle == true  && ioduration < arr_process[i].ioDur){
+					ioduration++; //
 					clock++;
 					printf("clock is %i",clock);
-				}
-				if(arr_process[i].ioduration == arr_process[i].ioDur){
-					printf("ioduration %i \n",arr_process[i].ioduration);
-					strcpy(arr_process[i].oldstate,"WAITING");
-					strcpy(arr_process[i].newstate,"READY");
-					printf("%i %i %s %s\n",clock,arr_process[i].pid,arr_process[i].oldstate,arr_process[i].newstate);
-					arr_process[i].iohandle = false;
-					arr_process[i].ioduration = 0;
+					printf("duration  is %i %i\n",arr_process[i].pid,ioduration);
+				
+					if((ioduration) == (arr_process[i].ioDur)){
+						printf("ioduration %i \n",ioduration);
+						strcpy(arr_process[i].oldstate,"WAITING");
+						strcpy(arr_process[i].newstate,"READY");
+						printf("%i %i %s %s\n",clock,arr_process[i].pid,arr_process[i].oldstate,arr_process[i].newstate);
+						arr_process[i].iohandle = false;
+						ioduration = 0;
 
+					}
 				}
+			
 
 				
 			
