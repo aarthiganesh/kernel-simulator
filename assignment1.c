@@ -1,3 +1,15 @@
+//-----------------------------------------------------------
+//  SYSC 4001 SECTION B
+//  ASSIGNMENT 1
+//  Date: February 5, 2021
+
+// Chhavi Sujeebun
+// Student Number: 101126487
+
+//  Aarth Ganesh
+// Student Number: 100970339
+
+//-----------------------------------------------------------
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -142,10 +154,9 @@ int main()
             start = false;
             running = true;
             currentProcess = 0;
-            nextProcess = 1;
-            processOnHold = 1;
             strcpy(arr_process[currentProcess].oldState,"READY");
             strcpy(arr_process[currentProcess].currentState,"RUNNING");
+            printf("%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
             threadAvail = false;
         }
 
@@ -163,40 +174,10 @@ int main()
                         break;
                     }
                 }
-
-                // if (strcmp(arr_process[processOnHold].currentState,"READY")==0){
-                //     threadAvail = false;
-                //     tempProcess = currentProcess;
-                //     currentProcess = processOnHold;
-                //     processOnHold = tempProcess;
-                //     strcpy(arr_process[currentProcess].oldState,"READY");
-                //     strcpy(arr_process[currentProcess].currentState,"RUNNING");
-                //     printf("%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
-                // }else{
-                //     printf("%i\t Thread is occupied\n",clock);
-                //     threadAvail = false;
-                //     currentProcess = nextProcess;
-                //     if(nextProcess<numCommands){
-                //         nextProcess ++;
-                //     }
-                //     strcpy(arr_process[currentProcess].oldState,"READY");
-                //     strcpy(arr_process[currentProcess].currentState,"RUNNING");
-                //     printf("%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
-                // }
             }
         }
-
-        // printf("%i\t%i\t%s\t%s\n\n",clock,arr_process[0].pid,arr_process[0].oldState,arr_process[0].currentState);
-        // printf("%i\t%i\t%s\t%s\n\n",clock,arr_process[1].pid,arr_process[1].oldState,arr_process[1].currentState);
 
         clock ++;
     }
     return 0;
 }
-
-
-// find the process with the lowest start time (counter: remaining time, interrupt intervals)
-// run first process
-// when there's an interrupt (counter: interrupt time)
-// switch processes to next available process (next lowest start time)
-// loop 
