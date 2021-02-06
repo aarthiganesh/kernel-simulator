@@ -103,8 +103,8 @@ int main(int argc,char *argv[])
 
     printf("Number of commands: %i\n",numCommands);
 
+    // infinite loop, only breaks when all commands terminate
     while(1){
-        // printf("%i\t",clock);
         // Start Processes
         for(i=0;i<numCommands;i++)
         {
@@ -114,6 +114,7 @@ int main(int argc,char *argv[])
                 strcpy(arr_process[i].currentState,"READY");
                 printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
 				fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+                // starts executing commands when first command is ready
                 if(i==0){
                     start = true;
                 }
@@ -127,11 +128,12 @@ int main(int argc,char *argv[])
                 if(arr_process[i].cpuCounter==arr_process[i].cpuTime){
                     strcpy(arr_process[i].oldState,"RUNNING");
                     strcpy(arr_process[i].currentState,"TERMINATED");
+                    completedCommands++;
                     threadAvail = true;
                     printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
 					fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
                     if(completedCommands==numCommands){
-                        exit(1);
+                        exit(0);
                     }
                 }
 
@@ -165,7 +167,6 @@ int main(int argc,char *argv[])
             start = false;
             running = true;
             currentProcess = 0;
-            nextProcess = 1;
             processOnHold = 1;
             strcpy(arr_process[currentProcess].oldState,"READY");
             strcpy(arr_process[currentProcess].currentState,"RUNNING");
