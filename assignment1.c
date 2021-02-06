@@ -103,7 +103,7 @@ int main(int argc,char *argv[])
 
     printf("Number of commands: %i\n",numCommands);
 
-    while(clock<200){
+    while(1){
         // printf("%i\t",clock);
         // Start Processes
         for(i=0;i<numCommands;i++)
