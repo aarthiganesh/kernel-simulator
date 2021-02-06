@@ -17,8 +17,8 @@
 #include <stdbool.h>
 #include <time.h>
 
-//test cases
-#include "test.h"
+// //test cases
+// #include "test.h"
 
 #define LSIZ 128 
 #define RSIZ 10 
