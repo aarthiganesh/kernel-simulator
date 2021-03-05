@@ -39,3 +39,4 @@ the total time needed in the CPU)
 - I/O Frequency: the processes are assumed to make an input/output with this frequency
 - I/O duration: this is the duration for the I/O for each of the processes (assumed to be the same for
 all the I/O operations)
+- Memory: amount of memory that needs to be allocated for the specified process

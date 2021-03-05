@@ -24,12 +24,14 @@
 #define LSIZ 128 
 #define RSIZ 10 
 
+// PCB STRUCTURE
 struct process{
     int pid; // pid
     int arrivalTime; // arrival time
     int cpuTime; //cpu time
     int ioFreq; // io frequency
     int ioDuration; // io duration
+    int partition;
     char oldState[11];
     char currentState[11]; //state of process
 
@@ -37,14 +39,28 @@ struct process{
     int ioDurationCounter; // increments when process is in waiting
     int ioFrequencyCounter;
     int priority;
+    int mem;
 };
 
-// A structure to represent a queue 
+// STRUCTURE FOR MEMORY PARTITIONS
+struct partition{
+    int id;
+    int size;
+    bool available;
+};
+
+// QUEUEING STRUCTURE
 struct Queue { 
     int front, rear, size; 
     unsigned capacity; 
     int* array; 
 }; 
+
+// int remainintMEM(){
+
+// }
+
+// QUEUEING FUNCTIONS
 struct Queue* createQueue(unsigned capacity) 
         { 
             struct Queue* queue = (struct Queue*)malloc( 
@@ -100,14 +116,6 @@ int rear(struct Queue* queue)
     return queue->array[queue->rear]; 
 } 
 
-struct eventList{
-    int clock;
-    int pid;
-    char oldState[10];
-    char currentState[10];
-};
-
-
 // arguments are argv[input.txt,output.txt]
 int main(int argc,char *argv[])
 {
@@ -145,35 +153,35 @@ int main(int argc,char *argv[])
     
     numCommands = i;
     struct process arr_process[numCommands];
+    printf("Number of commands: %i\n",numCommands);
 
-    // infinite loop, only breaks when all commands terminate
+    for(i=0;i<numCommands;i++)
+    {
+        sscanf(line[i] , "%i %i %i %i %i %i %i", &arr_process[i].pid, &arr_process[i].priority, &arr_process[i].arrivalTime, &arr_process[i].cpuTime, &arr_process[i].ioFreq, &arr_process[i].ioDuration, &arr_process[i].mem);
+        strcpy(arr_process[i].currentState,"NEW");
+        arr_process[i].ioDurationCounter=0;
+        arr_process[i].ioFrequencyCounter=0;
+        arr_process[i].cpuCounter=0;
+    }
+
+    // bubble sort commands in order of arrival time
+    for(i=0; i<numCommands; i++)
+    {
+        for(j=i; j<numCommands; j++)
+        {
+            if(arr_process[i].arrivalTime > arr_process[j].arrivalTime)
+            {
+                temp = arr_process[i];
+                arr_process[i] = arr_process[j];
+                arr_process[j] = temp;
+            }
+        }
+    }
+    
 
 // FCFS WITHOUT IO
     if (strcmp(argv[3],"fcfs")==0){
-        for(i=0;i<numCommands;i++)
-        {
-            sscanf(line[i] , "%i %i %i", &arr_process[i].pid, &arr_process[i].arrivalTime, &arr_process[i].cpuTime);
-            strcpy(arr_process[i].currentState,"NEW");
-            arr_process[i].ioDurationCounter=0;
-            arr_process[i].ioFrequencyCounter=0;
-            arr_process[i].cpuCounter=0;
-        }
-
-        // bubble sort commands in order of arrival time
-        for(i=0; i<numCommands; i++)
-        {
-            for(j=i; j<numCommands; j++)
-            {
-                if(arr_process[i].arrivalTime > arr_process[j].arrivalTime)
-                {
-                    temp = arr_process[i];
-                    arr_process[i] = arr_process[j];
-                    arr_process[j] = temp;
-                }
-            }
-        }
-
-        printf("Number of commands: %i\n",numCommands);
+        
         while(1){
             // Start Processes
             for(i=0;i<numCommands;i++)
@@ -238,31 +246,6 @@ int main(int argc,char *argv[])
     }
 // FCFS WITH IO    
     if (strcmp(argv[3],"fcfsIO")==0){
-        
-        for(i=0;i<numCommands;i++)
-        {
-            sscanf(line[i] , "%i %i %i %i %i", &arr_process[i].pid, &arr_process[i].arrivalTime, &arr_process[i].cpuTime, &arr_process[i].ioFreq, &arr_process[i].ioDuration);
-            strcpy(arr_process[i].currentState,"NEW");
-            arr_process[i].ioDurationCounter=0;
-            arr_process[i].ioFrequencyCounter=0;
-            arr_process[i].cpuCounter=0;
-        }
-
-        // bubble sort commands in order of arrival time
-        for(i=0; i<numCommands; i++)
-        {
-            for(j=i; j<numCommands; j++)
-            {
-                if(arr_process[i].arrivalTime > arr_process[j].arrivalTime)
-                {
-                    temp = arr_process[i];
-                    arr_process[i] = arr_process[j];
-                    arr_process[j] = temp;
-                }
-            }
-        }
-
-        printf("Number of commands: %i\n",numCommands);
 
         struct Queue* queue = createQueue(numCommands); 
 
@@ -352,162 +335,16 @@ int main(int argc,char *argv[])
     }
 // PRIORITY SCHEDULING
     if(strcmp(argv[3],"priority")==0){//to store the processes that are ready
-		for(i=0;i<numCommands;i++)
-		{
-			sscanf(line[i] , "%i %i %i %i", &arr_process[i].pid, &arr_process[i].arrivalTime, &arr_process[i].cpuTime, &arr_process[i].priority);
-		    strcpy(arr_process[i].currentState,"NEW");
-		    arr_process[i].cpuCounter=0;
-		}
-
-		// bubble sort commands in order of arrival time
-		for(i=0; i<numCommands; i++)
-		{
-			for(j=i; j<numCommands; j++)
-		    {
-		    	if(arr_process[i].arrivalTime > arr_process[j].arrivalTime)
-		        {
-		        	temp = arr_process[i];
-		            arr_process[i] = arr_process[j];
-		            arr_process[j] = temp;
-		        }
-		    }
-		}
-
-		printf("Number of commands: %i\n",numCommands);
-
-	    struct Queue* queue1 = createQueue(1000);  //queue for priotity 1
-		struct Queue* queue2 = createQueue(1000);  //queue for priotity 2
-		struct Queue* queue3 = createQueue(1000);  //queue for priotity 3
-		int queueid; //to know which queue to execute
 		
-
-        while(1){
-            // Start Processes
-            for(i=0;i<numCommands;i++)
-            {
-                // check if the process is ready
-                if(clock >= arr_process[i].arrivalTime && strcmp(arr_process[i].currentState,"NEW")==0){
-                    strcpy(arr_process[i].oldState,"NEW");
-                    strcpy(arr_process[i].currentState,"READY");
-					if(arr_process[i].priority ==1){
-						 enqueue(queue1,i);
-					}
-					if(arr_process[i].priority ==2){
-						 enqueue(queue2,i);
-					}
-					if(arr_process[i].priority ==1){
-						 enqueue(queue3,i);
-					}
-
-                   
-                    printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
-                    fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
-                    // starts executing commands when first command is ready
-                    if(i==0){
-                        start = true;
-                    }
-                }
-				
-				// cases for queues
-				if(!isEmpty(queue1)){
-					queueid = 1;
-				}else if(!isEmpty(queue2)){
-					queueid = 2;
-					
-				}else if(!isEmpty(queue3)){
-					queueid = 3;
-				}
-
-	
-	 			if(strcmp(arr_process[0].currentState,"READY")==0 && start){
-	                start = false;
-	                running = true;
-	                currentProcess = 0;
-	                strcpy(arr_process[currentProcess].oldState,"READY");
-	                strcpy(arr_process[currentProcess].currentState,"RUNNING");
-	                printf("%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
-	                fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
-					if(queueid == 1){
-						dequeue(queue1);
-					}else if(queueid == 2){
-						dequeue(queue2);
-					}else if(queueid == 3){
-						dequeue(queue3);
-					}
-	                
-	                threadAvail = false;
-            	}
-
-            	if (running && threadAvail){
-					if(queueid == 1){
-						currentProcess = front(queue1);
-					}else if(queueid == 2){
-						currentProcess = front(queue2);
-					}else if(queueid == 3){
-						currentProcess = front(queue3);
-					}
-               		//currentProcess = front(queue);
-                	threadAvail = false;
-                	strcpy(arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
-                	strcpy(arr_process[currentProcess].currentState,"RUNNING");
-                	if(queueid == 1){
-						dequeue(queue1);
-					}else if(queueid == 2){
-						dequeue(queue2);
-					}else if(queueid == 3){
-						dequeue(queue3);
-					}
-                	printf("%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
-                	fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
-            }
-
-				
-            // check if process is complete
-            if(strcmp(arr_process[i].currentState,"RUNNING")==0){
-                arr_process[i].cpuCounter ++;
-                threadAvail = false;
-                
-                if(arr_process[i].cpuCounter==arr_process[i].cpuTime){
-                    strcpy(arr_process[i].oldState,"RUNNING");
-                    strcpy(arr_process[i].currentState,"TERMINATED");
-                    completedCommands++;
-                    threadAvail = true;
-                    printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
-                    fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
-                    if(completedCommands==numCommands){
-                        exit(0);
-                    }
-                }
-            }
-        }
-
-        }
     }
 // ROUND ROBBIN SCHEDULING
     if (strcmp(argv[3],"rr")==0){
-        for(i=0;i<numCommands;i++)
-        {
-            sscanf(line[i] , "%i %i %i", &arr_process[i].pid, &arr_process[i].arrivalTime, &arr_process[i].cpuTime);
-            strcpy(arr_process[i].currentState,"NEW");
-            arr_process[i].cpuCounter=0;
+
+        // breaking the processes down into ms for RR 
+        for(i=0;i<numCommands;i++){
+            arr_process[i].arrivalTime = arr_process[i].arrivalTime * 1000;
+            arr_process[i].cpuTime = arr_process[i].cpuTime *1000;
         }
-
-        // bubble sort commands in order of arrival time
-        for(i=0; i<numCommands; i++)
-        {
-            for(j=i; j<numCommands; j++)
-            {
-                if(arr_process[i].arrivalTime > arr_process[j].arrivalTime)
-                {
-                    temp = arr_process[i];
-                    arr_process[i] = arr_process[j];
-                    arr_process[j] = temp;
-                }
-            }
-        }
-
-        printf("Number of commands: %i\n",numCommands);
-
 
         struct Queue* queue = createQueue(numCommands); 
 
@@ -587,6 +424,263 @@ int main(int argc,char *argv[])
     }
 // MEMORY MANAGEMENT
     if(strcmp(argv[3],"mm1")==0 || strcmp(argv[3],"mm2")==0){
+        int totalMEM = 0;
+        int availableMEM = 0;
+        int usableMEM = 0;
+        int usedMEM = 0;
+        struct partition partition[4];
+        for(i=0;i<4;i++){
+            partition[i].available = true;
+            partition[i].id = i+1;
+        }
+        if(strcmp(argv[3],"mm1")==0){
+            partition[0].size = 500;
+            partition[1].size = 250;
+            partition[2].size = 150;
+            partition[3].size = 100;
+            totalMEM = partition[3].size + partition[2].size + partition[1].size + partition[0].size;
+        }else if(strcmp(argv[3],"mm2")==0){
+            partition[0].size = 350;
+            partition[1].size = 300;
+            partition[2].size = 300;
+            partition[3].size = 50;
+            totalMEM = partition[3].size + partition[2].size + partition[1].size + partition[0].size;
+        }
+        availableMEM = totalMEM;
+        printf("O = available partition\nN = newly allocated partition\nX = occupied partition\n");
+        printf("TIME\tPID\tPAST\tNOW\t\tP1(%i)\tP2(%i)\tP3(%i)\tP4(%i)\tUSED\tAVAIL\tUSABLE\n",partition[0].size,partition[1].size,partition[2].size,partition[3].size);
+
+        struct Queue* queue = createQueue(numCommands); 
+
+        while(1){
+            // Start Processes
+            for(i=0;i<numCommands;i++)
+            {
+                // check if the process is ready
+                if(clock >= arr_process[i].arrivalTime && strcmp(arr_process[i].currentState,"NEW")==0){
+                    strcpy(arr_process[i].oldState,"NEW");
+                    strcpy(arr_process[i].currentState,"READY");
+                    enqueue(queue,i);
+                    printf("%i\t%i\t%s\t%s\t\t%s\t%s\t%s\t%s\t%i\t%i\t%i\n",
+                    clock,arr_process[i].pid,
+                    arr_process[i].oldState,
+                    arr_process[i].currentState,
+                    partition[0].available? "O":"X",
+                    partition[1].available? "O":"X",
+                    partition[2].available? "O":"X",
+                    partition[3].available? "O":"X",
+                    usedMEM,
+                    usableMEM,
+                    availableMEM
+                    );
+                    fprintf(outfile,"%i\t%i\t%s\t%s\t\t%s\t%s\t%s\t%s\t%i\t%i\t%i\n",
+                    clock,arr_process[i].pid,
+                    arr_process[i].oldState,
+                    arr_process[i].currentState,
+                    partition[0].available? "O":"X",
+                    partition[1].available? "O":"X",
+                    partition[2].available? "O":"X",
+                    partition[3].available? "O":"X",
+                    usedMEM,
+                    usableMEM,
+                    availableMEM
+                    );
+                    // starts executing commands when first command is ready
+                    if(i==0){
+                        start = true;
+                    }
+                }
+
+                // check if process is complete
+                if(strcmp(arr_process[i].currentState,"RUNNING")==0){
+                    arr_process[i].cpuCounter ++;
+                    
+                    if(arr_process[i].cpuCounter==arr_process[i].cpuTime){
+                        strcpy(arr_process[i].oldState,"RUNNING");
+                        strcpy(arr_process[i].currentState,"TERMINATED");
+                        partition[arr_process[i].partition-1].available=true;
+                        usedMEM = usedMEM - arr_process[i].mem;
+                        usableMEM = usableMEM - partition[arr_process[i].partition-1].size;
+                        availableMEM = totalMEM-usableMEM;
+                        completedCommands++;
+                        printf("%i\t%i\t%s\t%s\t%s\t%s\t%s\t%s\t%i\t%i\t%i\n",
+                            clock,arr_process[i].pid,
+                            arr_process[i].oldState,
+                            arr_process[i].currentState,
+                            partition[0].available? "O":"X",
+                            partition[1].available? "O":"X",
+                            partition[2].available? "O":"X",
+                            partition[3].available? "O":"X",
+                            usedMEM,
+                            usableMEM,
+                            availableMEM
+                        );
+                        fprintf(outfile,"%i\t%i\t%s\t%s\t%s\t%s\t%s\t%s\t%i\t%i\t%i\n",
+                            clock,arr_process[i].pid,
+                            arr_process[i].oldState,
+                            arr_process[i].currentState,
+                            partition[0].available? "O":"X",
+                            partition[1].available? "O":"X",
+                            partition[2].available? "O":"X",
+                            partition[3].available? "O":"X",
+                            usedMEM,
+                            usableMEM,
+                            availableMEM
+                        );
+                        if(completedCommands==numCommands){
+                            exit(0);
+                        }
+                    }
+                }
+            }
+
+            if ((partition[0].available || partition[1].available || partition[2].available || partition[3].available) && !isEmpty(queue)){
+                
+                // currentProcess = nextProcess;
+                // nextProcess = currentProcess +1;
+                if(partition[3].available && arr_process[front(queue)].mem<= partition[3].size ){
+                    strcpy(arr_process[front(queue)].oldState,arr_process[front(queue)].currentState);
+                    strcpy(arr_process[front(queue)].currentState,"RUNNING");
+                    arr_process[front(queue)].partition = 4;
+                    partition[3].available = false;
+                    usedMEM = usedMEM + partition[3].size;
+                    usableMEM = usableMEM + partition[3].size;
+                    availableMEM = totalMEM-usableMEM;
+                    printf("%i\t%i\t%s\t%s\t\t%s\t%s\t%s\t%s\t%i\t%i\t%i\n",
+                        clock,arr_process[front(queue)].pid,
+                        arr_process[front(queue)].oldState,
+                        arr_process[front(queue)].currentState,
+                        partition[0].available? "O":"X",
+                        partition[1].available? "O":"X",
+                        partition[2].available? "O":"X",
+                        partition[3].available? "O":"N",
+                        usedMEM,
+                        usableMEM,
+                        availableMEM
+                    );
+
+                    fprintf(outfile,"%i\t%i\t%s\t%s\t\t%s\t%s\t%s\t%s\t%i\t%i\t%i\n",
+                        clock,arr_process[front(queue)].pid,
+                        arr_process[front(queue)].oldState,
+                        arr_process[front(queue)].currentState,
+                        partition[0].available? "O":"X",
+                        partition[1].available? "O":"X",
+                        partition[2].available? "O":"X",
+                        partition[3].available? "O":"N",
+                        usedMEM,
+                        usableMEM,
+                        availableMEM
+                    );
+                    dequeue(queue);
+                } 
+                else if (partition[2].available && arr_process[front(queue)].mem<= partition[2].size ){
+                    strcpy(arr_process[front(queue)].oldState,arr_process[front(queue)].currentState);
+                    strcpy(arr_process[front(queue)].currentState,"RUNNING");
+                    partition[2].available = false;
+                    arr_process[front(queue)].partition = 3;
+                    usedMEM = usedMEM + partition[2].size;
+                    usableMEM = usableMEM + partition[2].size;
+                    availableMEM = totalMEM-usableMEM;
+                    printf("%i\t%i\t%s\t%s\t\t%s\t%s\t%s\t%s\t%i\t%i\t%i\n",
+                        clock,arr_process[front(queue)].pid,
+                        arr_process[front(queue)].oldState,
+                        arr_process[front(queue)].currentState,
+                        partition[0].available? "O":"X",
+                        partition[1].available? "O":"X",
+                        partition[2].available? "O":"N",
+                        partition[3].available? "O":"X",
+                        usedMEM,
+                        usableMEM,
+                        availableMEM
+                    );
+
+                    fprintf(outfile,"%i\t%i\t%s\t%s\t\t%s\t%s\t%s\t%s\t%i\t%i\t%i\n",
+                        clock,arr_process[front(queue)].pid,
+                        arr_process[front(queue)].oldState,
+                        arr_process[front(queue)].currentState,
+                        partition[0].available? "O":"X",
+                        partition[1].available? "O":"X",
+                        partition[2].available? "O":"N",
+                        partition[3].available? "O":"X",
+                        usedMEM,
+                        usableMEM,
+                        availableMEM
+                    );
+                    dequeue(queue);
+                } else if (partition[1].available && arr_process[front(queue)].mem<= partition[1].size ) {
+                    strcpy(arr_process[front(queue)].oldState,arr_process[front(queue)].currentState);
+                    strcpy(arr_process[front(queue)].currentState,"RUNNING");
+                    partition[1].available = false;
+                    arr_process[front(queue)].partition = 2;
+                    usedMEM = usedMEM + partition[1].size;
+                    usableMEM = usableMEM + partition[1].size;
+                    availableMEM = totalMEM-usableMEM;
+                    printf("%i\t%i\t%s\t%s\t\t%s\t%s\t%s\t%s\t%i\t%i\t%i\n",
+                        clock,arr_process[front(queue)].pid,
+                        arr_process[front(queue)].oldState,
+                        arr_process[front(queue)].currentState,
+                        partition[0].available? "O":"X",
+                        partition[1].available? "O":"N",
+                        partition[2].available? "O":"X",
+                        partition[3].available? "O":"X",
+                        usedMEM,
+                        usableMEM,
+                        availableMEM
+                    );
+
+                    fprintf(outfile,"%i\t%i\t%s\t%s\t\t%s\t%s\t%s\t%s\t%i\t%i\t%i\n",
+                        clock,arr_process[front(queue)].pid,
+                        arr_process[front(queue)].oldState,
+                        arr_process[front(queue)].currentState,
+                        partition[0].available? "O":"X",
+                        partition[1].available? "O":"N",
+                        partition[2].available? "O":"X",
+                        partition[3].available? "O":"X",
+                        usedMEM,
+                        usableMEM,
+                        availableMEM
+                    );
+                    dequeue(queue);
+                }else if (partition[0].available && arr_process[front(queue)].mem<= partition[0].size ) {
+                    strcpy(arr_process[front(queue)].oldState,arr_process[front(queue)].currentState);
+                    strcpy(arr_process[front(queue)].currentState,"RUNNING");
+                    partition[0].available = false;
+                    arr_process[front(queue)].partition = 1;
+                    usedMEM = usedMEM + partition[0].size;
+                    usedMEM = usedMEM + partition[0].size;
+                    usableMEM = usableMEM + partition[0].size;
+                    printf("%i\t%i\t%s\t%s\t\t%s\t%s\t%s\t%s\t%i\t%i\t%i\n",
+                        clock,arr_process[front(queue)].pid,
+                        arr_process[front(queue)].oldState,
+                        arr_process[front(queue)].currentState,
+                        partition[0].available? "O":"N",
+                        partition[1].available? "O":"X",
+                        partition[2].available? "O":"X",
+                        partition[3].available? "O":"X",
+                        usedMEM,
+                        usableMEM,
+                        availableMEM
+                    );
+
+                    fprintf(outfile,"%i\t%i\t%s\t%s\t\t%s\t%s\t%s\t%s\t%i\t%i\t%i\n",
+                        clock,arr_process[front(queue)].pid,
+                        arr_process[front(queue)].oldState,
+                        arr_process[front(queue)].currentState,
+                        partition[0].available? "O":"N",
+                        partition[1].available? "O":"X",
+                        partition[2].available? "O":"X",
+                        partition[3].available? "O":"X",
+                        usedMEM,
+                        usableMEM,
+                        availableMEM
+                    );
+
+                    dequeue(queue);
+                }
+            }
+
+            clock ++;
+        }
 
     }
     return 0;
