@@ -73,7 +73,7 @@ void enqueue(struct Queue* queue, int item)
                   % queue->capacity; 
     queue->array[queue->rear] = item; 
     queue->size = queue->size + 1; 
-    printf("%d enqueued to queue\n", item); 
+    // printf("Process %d enqueued to queue\n", (item+1)); 
 } 
 int dequeue(struct Queue* queue) 
 { 
@@ -83,7 +83,7 @@ int dequeue(struct Queue* queue)
     queue->front = (queue->front + 1) 
                    % queue->capacity; 
     queue->size = queue->size - 1;
-    printf("%d dequeued\n", item); 
+    // printf("Process %d dequeued\n", (item+1)); 
     return item; 
 }
 int front(struct Queue* queue) 
@@ -408,7 +408,7 @@ int main(int argc,char *argv[])
                         }
                     }
 
-                    if(rrCounter==100 && strcmp(arr_process[0].currentState,"RUNNING")==0){
+                    if(rrCounter==100 && strcmp(arr_process[i].currentState,"RUNNING")==0){
                         rrCounter=0;
                         threadAvail = true;
                         arr_process[i].ioFrequencyCounter = 0;
