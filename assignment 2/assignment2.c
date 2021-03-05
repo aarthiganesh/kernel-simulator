@@ -276,7 +276,6 @@ int main(int argc,char *argv[])
                     if(arr_process[i].cpuCounter==arr_process[i].cpuTime){
                         strcpy(arr_process[i].oldState,"RUNNING");
                         strcpy(arr_process[i].currentState,"TERMINATED");
-                        dequeue(queue);
                         completedCommands++;
                         threadAvail = true;
                         printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
@@ -288,12 +287,13 @@ int main(int argc,char *argv[])
 
                     if(arr_process[i].ioFrequencyCounter==arr_process[i].ioFreq){
                         arr_process[i].ioFrequencyCounter = 0;
-                        strcpy(arr_process[i].oldState,"RUNNING");
-                        strcpy(arr_process[i].currentState,"WAITING");
-                        dequeue(queue);
-                        threadAvail = true;
-                        printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
-                        fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+                        if (strcmp(arr_process[i].currentState,"RUNNING")==0){
+                            strcpy(arr_process[i].oldState,"RUNNING");
+                            strcpy(arr_process[i].currentState,"WAITING");
+                            threadAvail = true;
+                            printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+                            fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+                        }
                     }
                 }
                 
@@ -317,19 +317,22 @@ int main(int argc,char *argv[])
                 start = false;
                 running = true;
                 currentProcess = 0;
-                strcpy(arr_process[currentProcess].oldState,"READY");
-                strcpy(arr_process[currentProcess].currentState,"RUNNING");
-                printf("%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
-                fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
+                threadAvail = false;
+                strcpy(arr_process[front(queue)].oldState,"READY");
+                strcpy(arr_process[front(queue)].currentState,"RUNNING");
+                printf("%i\t%i\t%s\t%s\n",clock,arr_process[front(queue)].pid,arr_process[front(queue)].oldState,arr_process[front(queue)].currentState);
+                fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[front(queue)].pid,arr_process[front(queue)].oldState,arr_process[front(queue)].currentState);
+                dequeue(queue);
             }
 
             if (running && threadAvail && isEmpty(queue)==false){
                 currentProcess = front(queue);
                 threadAvail = false;
-                strcpy(arr_process[currentProcess].oldState,"READY");
-                strcpy(arr_process[currentProcess].currentState,"RUNNING");
-                printf("%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
-                fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
+                strcpy(arr_process[front(queue)].oldState,"READY");
+                strcpy(arr_process[front(queue)].currentState,"RUNNING");
+                printf("%i\t%i\t%s\t%s\n",clock,arr_process[front(queue)].pid,arr_process[front(queue)].oldState,arr_process[front(queue)].currentState);
+                fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[front(queue)].pid,arr_process[front(queue)].oldState,arr_process[front(queue)].currentState);
+                dequeue(queue);
             }
 
             clock ++;
