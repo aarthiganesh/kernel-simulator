@@ -23,7 +23,7 @@ if(strcmp(command,"priority")==0){
 
 		printf("Number of commands: %i\n",numCommands);
 
-	    struct Queue* queue1 = createQueue(1000);  //queue for priotity 1
+	  struct Queue* queue1 = createQueue(1000);  //queue for priotity 1
 		struct Queue* queue2 = createQueue(1000);  //queue for priotity 2
 		struct Queue* queue3 = createQueue(1000);  //queue for priotity 3
 		int queueid =0; //to know which queue to execute
@@ -155,3 +155,4 @@ if(strcmp(command,"priority")==0){
 			}
 			clock++;
 		}
+}
