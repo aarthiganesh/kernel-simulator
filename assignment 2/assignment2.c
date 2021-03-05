@@ -36,6 +36,7 @@ struct process{
     int cpuCounter; // increments up as soon as process starts running
     int ioDurationCounter; // increments when process is in waiting
     int ioFrequencyCounter;
+    int priority;
 };
 
 // A structure to represent a queue 
@@ -106,6 +107,7 @@ struct eventList{
     char currentState[10];
 };
 
+
 // arguments are argv[input.txt,output.txt]
 int main(int argc,char *argv[])
 {
@@ -145,6 +147,8 @@ int main(int argc,char *argv[])
     struct process arr_process[numCommands];
 
     // infinite loop, only breaks when all commands terminate
+
+// FCFS WITHOUT IO
     if (strcmp(argv[3],"fcfs")==0){
         for(i=0;i<numCommands;i++)
         {
@@ -232,7 +236,7 @@ int main(int argc,char *argv[])
             clock ++;
         }
     }
-    
+// FCFS WITH IO    
     if (strcmp(argv[3],"fcfsIO")==0){
         
         for(i=0;i<numCommands;i++)
@@ -259,6 +263,9 @@ int main(int argc,char *argv[])
         }
 
         printf("Number of commands: %i\n",numCommands);
+
+        struct Queue* queue = createQueue(numCommands); 
+
         while(1){
             // Start Processes
             for(i=0;i<numCommands;i++)
@@ -267,6 +274,7 @@ int main(int argc,char *argv[])
                 if(clock >= arr_process[i].arrivalTime && strcmp(arr_process[i].currentState,"NEW")==0){
                     strcpy(arr_process[i].oldState,"NEW");
                     strcpy(arr_process[i].currentState,"READY");
+                    enqueue(queue,i);
                     printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
                     fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
                     // starts executing commands when first command is ready
@@ -283,6 +291,7 @@ int main(int argc,char *argv[])
                     if(arr_process[i].cpuCounter==arr_process[i].cpuTime){
                         strcpy(arr_process[i].oldState,"RUNNING");
                         strcpy(arr_process[i].currentState,"TERMINATED");
+                        dequeue(queue);
                         completedCommands++;
                         threadAvail = true;
                         printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
@@ -296,6 +305,7 @@ int main(int argc,char *argv[])
                         arr_process[i].ioFrequencyCounter = 0;
                         strcpy(arr_process[i].oldState,"RUNNING");
                         strcpy(arr_process[i].currentState,"WAITING");
+                        dequeue(queue);
                         threadAvail = true;
                         printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
                         fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
@@ -310,7 +320,8 @@ int main(int argc,char *argv[])
                 if(arr_process[i].ioDurationCounter== (arr_process[i].ioDuration+1) && strcmp(arr_process[i].currentState,"WAITING")==0){
                     arr_process[i].ioDurationCounter = 0;
                     strcpy(arr_process[i].oldState,"WAITING");
-                    strcpy(arr_process[i].currentState,"RUNNING");
+                    strcpy(arr_process[i].currentState,"READY");
+                    enqueue(queue,i);
                     printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
                     fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
                 }
@@ -321,35 +332,158 @@ int main(int argc,char *argv[])
                 start = false;
                 running = true;
                 currentProcess = 0;
-                nextProcess = 1;
                 strcpy(arr_process[currentProcess].oldState,"READY");
                 strcpy(arr_process[currentProcess].currentState,"RUNNING");
                 printf("%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
                 fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
             }
 
-            if (running){
-
-                if (strcmp(arr_process[currentProcess].currentState,"TERMINATED")==0 && strcmp(arr_process[nextProcess].currentState,"READY")==0 && currentProcess!=(numCommands-1)){
-                    currentProcess = nextProcess;
-                    nextProcess = currentProcess +1;
-                    
-                    strcpy(arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
-                    strcpy(arr_process[currentProcess].currentState,"RUNNING");
-                    printf("%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
-                    fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
-                }
-
+            if (running && threadAvail && isEmpty(queue)==false){
+                currentProcess = front(queue);
+                threadAvail = false;
+                strcpy(arr_process[currentProcess].oldState,"READY");
+                strcpy(arr_process[currentProcess].currentState,"RUNNING");
+                printf("%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
+                fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
             }
 
             clock ++;
         }
     }
-    
-    if(strcmp(argv[3],"priority")==0){
+// PRIORITY SCHEDULING
+    if(strcmp(argv[3],"priority")==0){//to store the processes that are ready
+		for(i=0;i<numCommands;i++)
+		{
+			sscanf(line[i] , "%i %i %i %i", &arr_process[i].pid, &arr_process[i].arrivalTime, &arr_process[i].cpuTime, &arr_process[i].priority);
+		    strcpy(arr_process[i].currentState,"NEW");
+		    arr_process[i].cpuCounter=0;
+		}
 
+		// bubble sort commands in order of arrival time
+		for(i=0; i<numCommands; i++)
+		{
+			for(j=i; j<numCommands; j++)
+		    {
+		    	if(arr_process[i].arrivalTime > arr_process[j].arrivalTime)
+		        {
+		        	temp = arr_process[i];
+		            arr_process[i] = arr_process[j];
+		            arr_process[j] = temp;
+		        }
+		    }
+		}
+
+		printf("Number of commands: %i\n",numCommands);
+
+	    struct Queue* queue1 = createQueue(1000);  //queue for priotity 1
+		struct Queue* queue2 = createQueue(1000);  //queue for priotity 2
+		struct Queue* queue3 = createQueue(1000);  //queue for priotity 3
+		int queueid; //to know which queue to execute
+		
+
+        while(1){
+            // Start Processes
+            for(i=0;i<numCommands;i++)
+            {
+                // check if the process is ready
+                if(clock >= arr_process[i].arrivalTime && strcmp(arr_process[i].currentState,"NEW")==0){
+                    strcpy(arr_process[i].oldState,"NEW");
+                    strcpy(arr_process[i].currentState,"READY");
+					if(arr_process[i].priority ==1){
+						 enqueue(queue1,i);
+					}
+					if(arr_process[i].priority ==2){
+						 enqueue(queue2,i);
+					}
+					if(arr_process[i].priority ==1){
+						 enqueue(queue3,i);
+					}
+
+                   
+                    printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+                    fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+                    // starts executing commands when first command is ready
+                    if(i==0){
+                        start = true;
+                    }
+                }
+				
+				// cases for queues
+				if(!isEmpty(queue1)){
+					queueid = 1;
+				}else if(!isEmpty(queue2)){
+					queueid = 2;
+					
+				}else if(!isEmpty(queue3)){
+					queueid = 3;
+				}
+
+	
+	 			if(strcmp(arr_process[0].currentState,"READY")==0 && start){
+	                start = false;
+	                running = true;
+	                currentProcess = 0;
+	                strcpy(arr_process[currentProcess].oldState,"READY");
+	                strcpy(arr_process[currentProcess].currentState,"RUNNING");
+	                printf("%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
+	                fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
+					if(queueid == 1){
+						dequeue(queue1);
+					}else if(queueid == 2){
+						dequeue(queue2);
+					}else if(queueid == 3){
+						dequeue(queue3);
+					}
+	                
+	                threadAvail = false;
+            	}
+
+            	if (running && threadAvail){
+					if(queueid == 1){
+						currentProcess = front(queue1);
+					}else if(queueid == 2){
+						currentProcess = front(queue2);
+					}else if(queueid == 3){
+						currentProcess = front(queue3);
+					}
+               		//currentProcess = front(queue);
+                	threadAvail = false;
+                	strcpy(arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
+                	strcpy(arr_process[currentProcess].currentState,"RUNNING");
+                	if(queueid == 1){
+						dequeue(queue1);
+					}else if(queueid == 2){
+						dequeue(queue2);
+					}else if(queueid == 3){
+						dequeue(queue3);
+					}
+                	printf("%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
+                	fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[currentProcess].pid,arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
+            }
+
+				
+            // check if process is complete
+            if(strcmp(arr_process[i].currentState,"RUNNING")==0){
+                arr_process[i].cpuCounter ++;
+                threadAvail = false;
+                
+                if(arr_process[i].cpuCounter==arr_process[i].cpuTime){
+                    strcpy(arr_process[i].oldState,"RUNNING");
+                    strcpy(arr_process[i].currentState,"TERMINATED");
+                    completedCommands++;
+                    threadAvail = true;
+                    printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+                    fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+                    if(completedCommands==numCommands){
+                        exit(0);
+                    }
+                }
+            }
+        }
+
+        }
     }
-
+// ROUND ROBBIN SCHEDULING
     if (strcmp(argv[3],"rr")==0){
         for(i=0;i<numCommands;i++)
         {
@@ -375,7 +509,7 @@ int main(int argc,char *argv[])
         printf("Number of commands: %i\n",numCommands);
 
 
-        struct Queue* queue = createQueue(1000); 
+        struct Queue* queue = createQueue(numCommands); 
 
         while(1){
             // Start Processes
@@ -438,7 +572,7 @@ int main(int argc,char *argv[])
                 threadAvail = false;
             }
 
-            if (running && threadAvail){
+            if (running && threadAvail && isEmpty(queue)==false){
                 currentProcess = front(queue);
                 threadAvail = false;
                 strcpy(arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
@@ -451,8 +585,9 @@ int main(int argc,char *argv[])
             clock ++;
         }
     }
-    
-    
+// MEMORY MANAGEMENT
+    if(strcmp(argv[3],"mm1")==0 || strcmp(argv[3],"mm2")==0){
 
+    }
     return 0;
 }
