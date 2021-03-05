@@ -61,6 +61,7 @@ int main(int argc,char *argv[])
     bool running = false;
     struct process temp;
 
+
     int currentProcess=0;
     int processOnHold=0;
     int nextProcess=0;
