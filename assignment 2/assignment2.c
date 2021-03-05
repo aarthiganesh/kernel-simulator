@@ -346,6 +346,10 @@ int main(int argc,char *argv[])
         }
     }
     
+    if(strcmp(argv[3],"priority")==0){
+
+    }
+
     if (strcmp(argv[3],"rr")==0){
         for(i=0;i<numCommands;i++)
         {
@@ -407,14 +411,15 @@ int main(int argc,char *argv[])
                             exit(0);
                         }
                     }
+                }
 
-                    if(rrCounter==100 && strcmp(arr_process[i].currentState,"RUNNING")==0){
-                        rrCounter=0;
-                        threadAvail = true;
-                        arr_process[i].ioFrequencyCounter = 0;
+                if (rrCounter==100){
+                    rrCounter=0;
+                    threadAvail = true;
+                    if (strcmp(arr_process[i].currentState,"TERMINATED")!=0){
+                        enqueue(queue,i);
                         strcpy(arr_process[i].oldState,"RUNNING");
                         strcpy(arr_process[i].currentState,"READY");
-                        enqueue(queue,i);
                         printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
                         fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
                     }
@@ -447,5 +452,7 @@ int main(int argc,char *argv[])
         }
     }
     
+    
+
     return 0;
 }
