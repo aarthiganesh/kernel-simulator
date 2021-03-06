@@ -146,6 +146,7 @@ int main(int argc,char *argv[])
     int rrCounter=0;
 	float totalturnaround = 0;
 	float totalwait = 0;
+    float totalcpuTime = 0;
 	
     fptr = fopen(argv[1], "r");
 	outfile = fopen(argv[2], "w"); //create and open output.txt file to writereate and open output.txt file to write
@@ -167,6 +168,7 @@ int main(int argc,char *argv[])
         arr_process[i].ioDurationCounter=0;
         arr_process[i].ioFrequencyCounter=0;
         arr_process[i].cpuCounter=0;
+        totalcpuTime += arr_process[i].cpuTime;
     }
 
     // bubble sort commands in order of arrival time
@@ -569,7 +571,7 @@ int main(int argc,char *argv[])
                         if(completedCommands==numCommands){
 							float averageturnaround = totalturnaround/numCommands;
 							float averagewait = totalwait/numCommands;
-							printf("average turnaround, average wait %f\t%f\n",averageturnaround, averagewait);
+							printf("average turnaround: %fs\t average wait: %fs\n",averageturnaround/1000, averagewait/1000);
                             exit(0);
                         }
                     }
@@ -601,9 +603,11 @@ int main(int argc,char *argv[])
             }
 
             if (running && threadAvail && isEmpty(queue)==false){
-				arr_process[i].starttime = clock;
-				arr_process[i].waittime = arr_process[i].starttime - arr_process[i].cpuTime;
-				totalwait = totalwait + arr_process[i].waittime;
+                if (arr_process[front(queue)].cpuCounter==0){
+                    arr_process[front(queue)].starttime = clock;
+				    arr_process[front(queue)].waittime = arr_process[front(queue)].starttime - arr_process[front(queue)].arrivalTime;
+				    totalwait = totalwait + arr_process[front(queue)].waittime;
+                }
                 currentProcess = front(queue);
                 threadAvail = false;
                 strcpy(arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
@@ -652,9 +656,18 @@ int main(int argc,char *argv[])
             {
                 // check if the process is ready
                 if(clock >= arr_process[i].arrivalTime && strcmp(arr_process[i].currentState,"NEW")==0){
-                    strcpy(arr_process[i].oldState,"NEW");
-                    strcpy(arr_process[i].currentState,"READY");
-                    enqueue(queue,i);
+                    if(arr_process[i].mem<partition[0].size){
+                        strcpy(arr_process[i].oldState,"NEW");
+                        strcpy(arr_process[i].currentState,"READY");
+                        enqueue(queue,i);
+                    }else{
+                        strcpy(arr_process[i].oldState,"NEW");
+                        strcpy(arr_process[i].currentState,"CANTRUN"); // THE PROCESS CAN'T RUN BECAUSE IT IS TOO LARGE FOR ANY OF THE PARTITIONS
+                        completedCommands++;
+                        if(completedCommands==numCommands){
+                            exit(0);
+                        }
+                    }
                     printf("%i\t%i\t%s\t%s\t\t%s\t%s\t%s\t%s\t%i\t%i\t%i\n",
                     clock,arr_process[i].pid,
                     arr_process[i].oldState,
