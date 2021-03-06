@@ -1,4 +1,4 @@
-//-----------------------------------------------------------
+ //-----------------------------------------------------------
 //  SYSC 4001 SECTION B
 //  ASSIGNMENT 1
 //  Date: February 5, 2021
@@ -40,6 +40,10 @@ struct process{
     int ioFrequencyCounter;
     int priority;
     int mem;
+	int waittime;
+	int turnaround;
+	int starttime;
+	int stoptime;
 };
 
 // STRUCTURE FOR MEMORY PARTITIONS
@@ -140,10 +144,11 @@ int main(int argc,char *argv[])
     int completedCommands = 0;
     int tempProcess=0;
     int rrCounter=0;
+	float totalturnaround = 0;
+	float totalwait = 0;
 	
-
     fptr = fopen(argv[1], "r");
-	outfile = fopen(argv[2], "w"); //create and open output.txt file to write
+	outfile = fopen(argv[2], "w"); //create and open output.txt file to writereate and open output.txt file to write
 
     while(fgets(line[i], 200, fptr)) 
     {
@@ -206,13 +211,22 @@ int main(int argc,char *argv[])
                     arr_process[i].cpuCounter ++;
                     
                     if(arr_process[i].cpuCounter==arr_process[i].cpuTime){
+						arr_process[i].stoptime = clock;
                         strcpy(arr_process[i].oldState,"RUNNING");
                         strcpy(arr_process[i].currentState,"TERMINATED");
                         completedCommands++;
                         threadAvail = true;
                         printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
                         fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+
+						arr_process[i].turnaround = arr_process[i].stoptime - arr_process[i].arrivalTime;				
+						totalturnaround = totalturnaround + arr_process[i].turnaround;
+					
                         if(completedCommands==numCommands){
+						
+							float averageturnaround = totalturnaround/numCommands;
+							float averagewait = totalwait/numCommands;
+							printf("average turnaround, average wait %f\t%f\n",averageturnaround, averagewait);
                             exit(0);
                         }
                     }
@@ -231,7 +245,9 @@ int main(int argc,char *argv[])
             }
 
             if (running && threadAvail){
-
+				arr_process[i].starttime = clock;
+				arr_process[i].waittime = arr_process[i].starttime - arr_process[i].cpuTime;
+				totalwait = totalwait + arr_process[i].waittime;
                 if (!isEmpty(queue)){
                     strcpy(arr_process[front(queue)].oldState,arr_process[front(queue)].currentState);
                     strcpy(arr_process[front(queue)].currentState,"RUNNING");
@@ -242,9 +258,12 @@ int main(int argc,char *argv[])
                 }
 
             }
+			
+
 
             clock ++;
         }
+		
     }
 // FCFS WITH IO    
     if (strcmp(argv[3],"fcfsIO")==0){
@@ -274,13 +293,19 @@ int main(int argc,char *argv[])
                     arr_process[i].ioFrequencyCounter++;
                     
                     if(arr_process[i].cpuCounter==arr_process[i].cpuTime){
+						arr_process[i].stoptime = clock;
                         strcpy(arr_process[i].oldState,"RUNNING");
                         strcpy(arr_process[i].currentState,"TERMINATED");
                         completedCommands++;
                         threadAvail = true;
                         printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
                         fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+						arr_process[i].turnaround = arr_process[i].stoptime - arr_process[i].arrivalTime;				
+						totalturnaround = totalturnaround + arr_process[i].turnaround;
                         if(completedCommands==numCommands){
+							float averageturnaround = totalturnaround/numCommands;
+							float averagewait = totalwait/numCommands;
+							printf("average turnaround, average wait %f\t%f\n",averageturnaround, averagewait);
                             exit(0);
                         }
                     }
@@ -326,6 +351,9 @@ int main(int argc,char *argv[])
             }
 
             if (running && threadAvail && isEmpty(queue)==false){
+				arr_process[i].starttime = clock;
+				arr_process[i].waittime = arr_process[i].starttime - arr_process[i].cpuTime;
+				totalwait = totalwait + arr_process[i].waittime;
                 currentProcess = front(queue);
                 threadAvail = false;
                 strcpy(arr_process[front(queue)].oldState,"READY");
@@ -385,6 +413,7 @@ int main(int argc,char *argv[])
                     arr_process[i].cpuCounter ++;
                     
                     if(arr_process[i].cpuCounter==arr_process[i].cpuTime){
+						arr_process[i].stoptime = clock;
                         strcpy(arr_process[i].oldState,"RUNNING");
                         strcpy(arr_process[i].currentState,"TERMINATED");
                         completedCommands++;
@@ -408,7 +437,12 @@ int main(int argc,char *argv[])
                         arr_process[i].priority,
                         arr_process[i].oldState,
                         arr_process[i].currentState);
+						arr_process[i].turnaround = arr_process[i].stoptime - arr_process[i].arrivalTime;				
+						totalturnaround = totalturnaround + arr_process[i].turnaround;
                         if(completedCommands==numCommands){
+							float averageturnaround = totalturnaround/numCommands;
+							float averagewait = totalwait/numCommands;
+							printf("average turnaround, average wait %f\t%f\n",averageturnaround, averagewait);
                             exit(0);
                         }
                     }
@@ -433,6 +467,9 @@ int main(int argc,char *argv[])
             }
 
             if (running && threadAvail){
+				arr_process[i].starttime = clock;
+				arr_process[i].waittime = arr_process[i].starttime - arr_process[i].cpuTime;
+				totalwait = totalwait + arr_process[i].waittime;
 
                 if(!isEmpty(queue1)){
                     strcpy(arr_process[front(queue1)].oldState,"READY");
@@ -519,13 +556,20 @@ int main(int argc,char *argv[])
                     threadAvail = false;
                     
                     if(arr_process[i].cpuCounter==arr_process[i].cpuTime){
+						arr_process[i].stoptime = clock;
                         strcpy(arr_process[i].oldState,"RUNNING");
                         strcpy(arr_process[i].currentState,"TERMINATED");
                         completedCommands++;
                         threadAvail = true;
                         printf("%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
                         fprintf(outfile,"%i\t%i\t%s\t%s\n",clock,arr_process[i].pid,arr_process[i].oldState,arr_process[i].currentState);
+
+						arr_process[i].turnaround = arr_process[i].stoptime - arr_process[i].arrivalTime;				
+						totalturnaround = totalturnaround + arr_process[i].turnaround;
                         if(completedCommands==numCommands){
+							float averageturnaround = totalturnaround/numCommands;
+							float averagewait = totalwait/numCommands;
+							printf("average turnaround, average wait %f\t%f\n",averageturnaround, averagewait);
                             exit(0);
                         }
                     }
@@ -557,6 +601,9 @@ int main(int argc,char *argv[])
             }
 
             if (running && threadAvail && isEmpty(queue)==false){
+				arr_process[i].starttime = clock;
+				arr_process[i].waittime = arr_process[i].starttime - arr_process[i].cpuTime;
+				totalwait = totalwait + arr_process[i].waittime;
                 currentProcess = front(queue);
                 threadAvail = false;
                 strcpy(arr_process[currentProcess].oldState,arr_process[currentProcess].currentState);
