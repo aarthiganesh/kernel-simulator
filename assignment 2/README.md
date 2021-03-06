@@ -57,6 +57,8 @@ and must wait until memory is available. The simulator must record, every time a
 NOT COUNT the internal fragmentation, as those fragments are not usable). 
 ## Input Data
 
+`| PID | Priority | Arrival Time | Total CPU Time | IO Frequency | IO Duration | Memory`
+
 The input data will be included in an input.txt file. Each line corresponds to a different process, and each value in the line corresponds to the following values:
 - Pid: a unique identifier for the process
 - Priority: the priority value of the process, the higher the number, the higher the priority
