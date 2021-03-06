@@ -656,7 +656,7 @@ int main(int argc,char *argv[])
             {
                 // check if the process is ready
                 if(clock >= arr_process[i].arrivalTime && strcmp(arr_process[i].currentState,"NEW")==0){
-                    if(arr_process[i].mem<partition[0].size){
+                    if(arr_process[i].mem<=partition[0].size){
                         strcpy(arr_process[i].oldState,"NEW");
                         strcpy(arr_process[i].currentState,"READY");
                         enqueue(queue,i);
