@@ -84,3 +84,7 @@ all the I/O operations)
 `Time(s) | Process ID | Old State | New State | P1AVAIL | P2AVAIL | P3AVAIL | P4AVAIL | Used MEM | Available MEM | Usable MEM `
 
 Where `P1AVAIL` indicates the availatility of partition 1
+
+## Folder Structure
+`test cases` folder stores all of the 10 test cases. They can be used with all of the scenarios
+`sample output` sample outputs for the test case provided in the assignment
