@@ -750,7 +750,7 @@ int main(int argc,char *argv[])
                     strcpy(arr_process[front(queue)].currentState,"RUNNING");
                     arr_process[front(queue)].partition = 4;
                     partition[3].available = false;
-                    usedMEM = usedMEM + partition[3].size;
+                    usedMEM = usedMEM + arr_process[front(queue)].mem;
                     usableMEM = usableMEM + partition[3].size;
                     availableMEM = totalMEM-usableMEM;
                     printf("%i\t%i\t%s\t%s\t\t%s\t%s\t%s\t%s\t%i\t%i\t%i\n",
@@ -785,7 +785,7 @@ int main(int argc,char *argv[])
                     strcpy(arr_process[front(queue)].currentState,"RUNNING");
                     partition[2].available = false;
                     arr_process[front(queue)].partition = 3;
-                    usedMEM = usedMEM + partition[2].size;
+                    usedMEM = usedMEM + arr_process[front(queue)].mem;
                     usableMEM = usableMEM + partition[2].size;
                     availableMEM = totalMEM-usableMEM;
                     printf("%i\t%i\t%s\t%s\t\t%s\t%s\t%s\t%s\t%i\t%i\t%i\n",
@@ -819,7 +819,7 @@ int main(int argc,char *argv[])
                     strcpy(arr_process[front(queue)].currentState,"RUNNING");
                     partition[1].available = false;
                     arr_process[front(queue)].partition = 2;
-                    usedMEM = usedMEM + partition[1].size;
+                    usedMEM = usedMEM + arr_process[front(queue)].mem;
                     usableMEM = usableMEM + partition[1].size;
                     availableMEM = totalMEM-usableMEM;
                     printf("%i\t%i\t%s\t%s\t\t%s\t%s\t%s\t%s\t%i\t%i\t%i\n",
@@ -853,9 +853,9 @@ int main(int argc,char *argv[])
                     strcpy(arr_process[front(queue)].currentState,"RUNNING");
                     partition[0].available = false;
                     arr_process[front(queue)].partition = 1;
-                    usedMEM = usedMEM + partition[0].size;
-                    usedMEM = usedMEM + partition[0].size;
+                    usedMEM = usedMEM + arr_process[front(queue)].mem;
                     usableMEM = usableMEM + partition[0].size;
+                    availableMEM = totalMEM-usableMEM;
                     printf("%i\t%i\t%s\t%s\t\t%s\t%s\t%s\t%s\t%i\t%i\t%i\n",
                         clock,arr_process[front(queue)].pid,
                         arr_process[front(queue)].oldState,
