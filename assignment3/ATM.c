@@ -45,15 +45,12 @@ int main(){
 
 	while(1){
 		requestinput();
-		inputvalid = 1;
 		strcpy(dataToSend.text,"UPDATE");
-			if(inputvalid){
-				printf("Data sent from ATM to DBSERVER is : %s, %s, %s\n", dataToSend.pin, dataToSend.accountnumber, dataToSend.text);
-				if(msgsnd(msgidATM, &dataToSend, sizeof(struct message),0) == -1){
-					printf("Error msgsnd failed\n");
-				}
-				inputvalid = 0;
+			printf("Data sent from ATM to DBSERVER is : %s, %s, %s\n", dataToSend.pin, dataToSend.accountnumber, dataToSend.text);
+			if(msgsnd(msgidATM, &dataToSend, sizeof(struct message),0) == -1){
+				printf("Error msgsnd failed\n");
 			}
+			inputvalid = 0;
 	}
 
 }

@@ -65,19 +65,21 @@ int main()
 	//to receive the first message
 	while(1){
 
-
 		//RECEIVE MESSAGE FROM ATM
 		if(msgrcv(msgidATM, &dataReceived, sizeof(struct message),0,0)== -1){
 			printf("Error msgrcv failed");	
+		}else{
+			for(int i=0;i<numAccounts;i++){
+				if(strcmp(dataReceived.accountnumber,dbArray[i].accountnumber) == 0){
+					printf("YAAYYY ACCOUNT EXISTS");
+				}
+			}
 		}
+
 		// DATA FROM ATM
 		printf("Data Received from ATM is : %s %s\n",dataReceived.pin,dataReceived.accountnumber);
 
-		for(int i=0;i<numAccounts;i++){
-			if(strcmp(dataReceived.accountnumber,dbArray[i].accountnumber) == 0){
-				printf("YAAYYY ACCOUNT EXISTS");
-			}
-		}
+		
 
 		// //RECEIVE MESSAGE FROM EDITOR
 		// if(msgrcv(msgidEditor, &dataToUpdate, sizeof(struct message),0,0)== -1){
