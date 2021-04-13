@@ -22,6 +22,19 @@ struct message dataToSend;
 struct message dataReceived;
 struct message dataToUpdate;
 
+// void msg_rcv (int qid, int msgtype)
+
+// 		if (msgrcv(qid,&dataReceived, sizeof(struct message), msgtype,
+// 							MSG_NOERROR | IPC_NOWAIT) == -1) {
+// 				if (errno != ENOMSG) {
+// 						perror("msgrcv");
+// 				}
+// 		} else{
+// 				printf("message received: %s %s\n", dataReceived.accountnumber, dataReceived.pin);
+// 		}
+// }
+
+
 
 int main()
 {
@@ -65,10 +78,13 @@ int main()
 	//to receive the first message
 	while(1){
 
+		// msg_rcv(msgidATM,0);
+
 		//RECEIVE MESSAGE FROM ATM
-		if(msgrcv(msgidATM, &dataReceived, sizeof(struct message),0,0)== -1){
-			printf("Error msgrcv failed");	
+		if(msgrcv(msgidATM, &dataReceived, sizeof(struct message),0,IPC_NOWAIT)== -1){
+			// printf("Error msgrcv failed");	
 		}else{
+			printf("HERE\n");
 			for(int i=0;i<numAccounts;i++){
 				if(strcmp(dataReceived.accountnumber,dbArray[i].accountnumber) == 0){
 					// printf("YAAYYY ACCOUNT EXISTS\n");
@@ -81,27 +97,27 @@ int main()
 			}
 		}
 
-		// // DATA FROM ATM
-		printf("Data Received from ATM is : %s %s\n",dataReceived.pin,dataReceived.accountnumber);
 
 		
 
-		// //RECEIVE MESSAGE FROM EDITOR
-		// if(msgrcv(msgidEditor, &dataToUpdate, sizeof(struct message),0,0)== -1){
-		// 	printf("Error msgrcv failed");	
-		// }
-		// // DATA FROM DBEDITOR
-		// printf("Data Received from DBEDITOR is : %s %s %f %s\n",dataToUpdate.pin,dataToUpdate.accountnumber,dataToUpdate.balance,dataToUpdate.text);
+		//RECEIVE MESSAGE FROM EDITOR
+		if(msgrcv(msgidEditor, &dataToUpdate, sizeof(struct message),0,IPC_NOWAIT)== -1){
+			// printf("Error msgrcv failed");	
+		}else{
+			// DATA FROM DBEDITOR
+			printf("Data Received from DBEDITOR is : %s %s %f %s\n",dataToUpdate.pin,dataToUpdate.accountnumber,dataToUpdate.balance,dataToUpdate.text);
 
-		// if(strcmp(dataToUpdate.text,"UPDATE_DB") == 0){
-		// 	printf("DATABASE HAS BEEN UPDATED WITH:\n\tPIN: %s\n\tAccount Number: %s\n\tBalance:$%.2f\n\t%s\n",dataToUpdate.pin,dataToUpdate.accountnumber,dataToUpdate.balance,dataToUpdate.text);
+			if(strcmp(dataToUpdate.text,"UPDATE_DB") == 0){
+				printf("DATABASE HAS BEEN UPDATED WITH:\n\tPIN: %s\n\tAccount Number: %s\n\tBalance:$%.2f\n\t%s\n",dataToUpdate.pin,dataToUpdate.accountnumber,dataToUpdate.balance,dataToUpdate.text);
 
-		// 	fprintf(dbfile,"%s\t%s\t%f\n",
-		// 		dataToUpdate.pin,
-		// 		dataToUpdate.accountnumber,
-		// 		dataToUpdate.balance);
-		// 	//add 1 to pin number to encrypt
-		// }
+				fprintf(dbfile,"%s\t%s\t%f\n",
+					dataToUpdate.pin,
+					dataToUpdate.accountnumber,
+					dataToUpdate.balance);
+				//add 1 to pin number to encrypt
+			}
+		
+		}
 	}
 	
 
