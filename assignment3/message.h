@@ -1,6 +1,6 @@
 struct message{
 	char text[20];
-	char pin[3];
+	char pin[4];
 	float balance;
-	char accountnumber[5];
+	char accountnumber[6];
 };
