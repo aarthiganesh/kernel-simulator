@@ -1,5 +1,11 @@
-:: Runs Assignment 1 with test input2.txt
-:: Output results are stored in output2.txt
+:: Runs Assignment 2 with test input.txt
+:: Output files are stored in output.txt
 
-gcc assignment1.c -o assignment1
-./assignment1 input2.txt output2.txt
+gcc assignment2.c -o assignment2
+./assignment2 ./testcases/test3.txt output.txt fcfs
+./assignment2 ./testcases/test3.txt output.txt fcfsIO
+./assignment2 ./testcases/test3.txt output.txt priority
+./assignment2 ./testcases/test3.txt output.txt rr
+
+./assignment2 ./testcases/test3.txt output.txt mm1
+./assignment2 ./testcases/test3.txt output.txt mm2
