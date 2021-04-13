@@ -71,12 +71,17 @@ int main()
 		}else{
 			for(int i=0;i<numAccounts;i++){
 				if(strcmp(dataReceived.accountnumber,dbArray[i].accountnumber) == 0){
-					printf("YAAYYY ACCOUNT EXISTS");
+					// printf("YAAYYY ACCOUNT EXISTS\n");
+					if(strcmp(dataReceived.pin,dbArray[i].pin) == 0){
+						printf("PIN_CORRECT\n");
+					}else{
+						printf("PIN_ERROR\n");
+					}
 				}
 			}
 		}
 
-		// DATA FROM ATM
+		// // DATA FROM ATM
 		printf("Data Received from ATM is : %s %s\n",dataReceived.pin,dataReceived.accountnumber);
 
 		
