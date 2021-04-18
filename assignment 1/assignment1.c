@@ -73,7 +73,7 @@ int main(int argc,char *argv[])
 
     while(fgets(line[i], 200, fptr)) 
     {
-        line[i][strlen(line[i]) - 1] = '\0';
+        line[i][strlen(line[i]) - 1] = '\n';
         i++;
     }
     
