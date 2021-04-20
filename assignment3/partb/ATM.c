@@ -8,7 +8,7 @@
 #include <errno.h>
 #include "semun.h"
 #include "message.h"
-
+#include <sys/shm.h>
 //defining the queue ids
 #define ATMQUEUE 12345
 #define DBSERVERQUEUE 11111
@@ -86,14 +86,17 @@ void requestinput(void){
 
 
 int atm(){
-
+	
 	int msgidATM;
 	int msgidServer;
+	int shmid;
+	char (*variable)[20];
 	char *args[] = {"./DBSERVER",NULL};
 	sem_id = semget((key_t)1234,1,0644|IPC_CREAT);
 	msgidATM = msgget((key_t)ATMQUEUE, 0666|IPC_CREAT);
 	msgidServer = msgget((key_t)DBSERVERQUEUE, 0666|IPC_CREAT);
-	
+	key_t key = ftok("shmfile",65);
+	shmid = shmget(key, 1024, 0644|IPC_CREAT);
 	while(1){
 		
 		if (!set_semvalue()) {
@@ -131,10 +134,19 @@ int atm(){
 				scanf("%f", &withdrawamount);
 				dataToSend.withdrawal = withdrawamount;
 			}
+			else if(strcmp(bankingoption,"paybill")==0){
 			//ADDING NEW FUNCTIONALITY paybill
 				printf("Bill amount: ");
 				scanf("%f", &billamount);
 				dataToSend.bill = billamount;
+				//parent has semaphore, can to write in shared memory
+				variable = shmat(shmid,(void*)0,0);
+				printf("would you like a receipt? Enter y for yes or n for no");
+				printf("Enter your choice: \n");
+				scanf("%s",variable);
+				
+				printf("Data written in memory: %s\n",variable);
+				
 			}
 
 			if(msgsnd(msgidATM, &dataToSend, sizeof(struct message),0) == -1){
@@ -149,6 +161,9 @@ int atm(){
 			printf("Message: %s\nAcct Number: %s\nBalance: %.2f\n", dataReceived.text, dataReceived.accountnumber, dataReceived.balance);
 
 		}
+		//detach from shared memory
+		shmdt(variable);
+
 		
 		if(!semaphore_v()) exit(EXIT_FAILURE);
 		 del_semvalue();
