@@ -1,3 +1,4 @@
+
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -6,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-
+#include <sys/shm.h>
 #include "message.h"
 #include "dbarray.h"
 
@@ -37,10 +38,18 @@ int main()
 	int msgidServer;
 	int msgidEditor; // DBSERVER <--> DBEDITOR
 	int acctCounter = 0;
+	int shmid;
+	char (*variable)[20];
+	key_t key = ftok("shmfile",65);
 
+	shmid = shmget(key, 1024, 0644|IPC_CREAT);
+	if (shmid == -1) {
+		perror("Shared memory");
+		return 1;
+	}
 	//Data structs to send and receive from message queue
 	printf("DB File Open\n");
-  dbfile = fopen("db.txt", "r+"); //create and open output.txt file to writereate and open output.txt file to write
+	dbfile = fopen("db.txt", "r+"); //create and open output.txt file to writereate and open output.txt file to write
 
 	while(fgets(line[acctCounter], 200, dbfile)) 
 	{
@@ -106,6 +115,22 @@ int main()
 							}else{
 								strcpy(dataToSend.text,"NSF");
 							}
+						//pay bill: verify if there is enough balance and pays the amount
+						}else if(strcmp(dataReceived.text,"paybill")==0 ){
+							printf("PROCESSING BILL\n");
+							if(dataReceived.bill<=dbArray[i].balance){
+								//strcpy(dataToSend.text,"FUNDS_OK");
+								dbArray[i].balance = dbArray[i].balance - dataReceived.bill;
+								dataToSend.balance = dbArray[i].balance;
+
+								variable = shmat(shmid,(void*)0,0);
+								printf("Received response for receipt: %s\n",variable);
+								if(strcmp(variable[0],"y")== 0){
+									printf("========RECEIPT=========\n");
+									printf("Bill Payment of $ %f was made\n",dataReceived.bill);
+									printf("Balance Remaining is $ %f\n", dbArray[i].balance);
+									printf("===========================\n");
+								}
 						}
 
 						// send response
