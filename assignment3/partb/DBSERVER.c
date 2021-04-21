@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/sem.h>
 
 #include "message.h"
 #include "dbarray.h"
@@ -16,18 +17,28 @@
 #define DBEDITORQUEUE 54321
 #define MAX_TEXT_SIZE 20
 
+//file altering variables
 FILE *dbfile = NULL;
 char line [128][100];
 int numAccounts = 0;
-
-struct message dataToSend;
-struct message dataReceived;
-struct message dataToUpdate;
 
 void printOption(struct message dataReceived);
 void readDB(struct dbarray dbArray[], int numAccounts);
 void updateDB(struct dbarray dbArray[], int numAccounts);
 void calcNumAcct();
+
+// message structs
+struct message dataToSend;
+struct message dataReceived;
+struct message dataToUpdate;
+
+// semaphore variables
+static int sem_id;
+
+static int set_semvalue(void);
+static void del_semvalue(void);
+static int sem_wait(void);
+static int sem_release(void);
 
 
 int main()
@@ -42,6 +53,12 @@ int main()
 	msgidATM = msgget((key_t)ATMQUEUE, 0666|IPC_CREAT);
 	msgidServer = msgget((key_t)DBSERVERQUEUE, 0666|IPC_CREAT);
 	msgidEditor = msgget((key_t)DBEDITORQUEUE, 0666|IPC_CREAT);
+	sem_id = semget((key_t)1200, 1, 0666 | IPC_CREAT);
+
+	if (!set_semvalue()) {
+		fprintf(stderr, "Failed to initialize semaphore\n");
+		exit(EXIT_FAILURE);
+	}
 
 	printf("ATM QID: %d\n",msgidATM);
 	printf("DBSERVER QID: %d\n",msgidServer);
@@ -55,6 +72,9 @@ int main()
 			// printf("Error msgrcv failed");	
 		}else{
 			printf("----------------PIN and ACCT received-------------------\n");
+			
+			if (!sem_wait()) exit(EXIT_FAILURE);
+
 			// read the db
 			calcNumAcct();
 			struct dbarray dbArray[numAccounts];
@@ -123,6 +143,9 @@ int main()
 					}
 				}
 			}
+			
+			if (!sem_release()) exit(EXIT_FAILURE);
+
 			numAccounts = 0;
 		}
 	}
@@ -160,6 +183,7 @@ void readDB(struct dbarray dbArray[], int numAccounts){
 }
 
 void updateDB(struct dbarray dbArray[], int numAccounts){
+
 	dbfile = fopen("db.txt", "w");
 	printf("Number of Accounts: %i\n",numAccounts);
 	//Print contents of collection into the file with proper formatting
@@ -168,4 +192,49 @@ void updateDB(struct dbarray dbArray[], int numAccounts){
 	}
 	//Close file and return
 	fclose(dbfile);
+}
+
+//Set semaphore value
+static int set_semvalue(void)
+{
+	union semun sem_union;
+	sem_union.val = 1;
+	if (semctl(sem_id, 0, SETVAL, sem_union) == -1) return(0);
+	return(1);
+}
+
+//Delete semaphore
+static void del_semvalue(void)
+{
+	union semun sem_union;
+	if (semctl(sem_id, 0, IPC_RMID, sem_union) == -1)
+		fprintf(stderr, "Failed to delete semaphore\n");
+}
+
+//Semaphore wait
+static int sem_wait(void)
+{
+	struct sembuf sem_b;
+	sem_b.sem_num = 0;
+	sem_b.sem_op = -1; /* P() */
+	sem_b.sem_flg = SEM_UNDO;
+	if (semop(sem_id, &sem_b, 1) == -1) {
+		fprintf(stderr, "SEM: wait failed\n");
+		return(0);
+	}
+	return(1);
+}
+
+//Semaphore release
+static int sem_release(void)
+{
+	struct sembuf sem_b;
+	sem_b.sem_num = 0;
+	sem_b.sem_op = 1; /* V() */
+	sem_b.sem_flg = SEM_UNDO;
+	if (semop(sem_id, &sem_b, 1) == -1) {
+		fprintf(stderr, "SEM: failed to release\n");
+		return(0);
+	}
+	return(1);
 }
