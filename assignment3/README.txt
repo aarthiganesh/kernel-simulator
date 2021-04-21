@@ -9,7 +9,19 @@ Terminal 2: `gcc process2.c -o process2`  **NOTE: THE COMPILED FILE MUST BE NAME
 All the terminal will then prompt the user to enter either `1`, `2` or `x`. (`x` will terminate all of the processes)
 
 ## PART B: ATM execution instructions
-There are 3 different files that are required to properly run the ATM. There is ATM.c, DBSERVER.c and DBEDITOR. As shown in the assignment system diagram the ATM will ask the user to enter uinique identification information in order to access an account. The DBSERVER will find relevant information and send it back to the ATM and DBEDITOR will update the database file (db.txt) when any changes occur to the database. 
+There are 3 different files that are required to properly run the ATM. There is ATM.c, DBSERVER.c and DBEDITOR. As shown in the assignment system diagram the ATM will ask the user to enter uinique identification information in order to access an account. The DBSERVER will find relevant information and send it back to the ATM and DBEDITOR will update the database file (db.txt) when any changes occur to the database.
+
+### db.txt Format
+The format of db.txt MUST BE AS FOLLOWS
+
+```<account number> <pin> <balance>```
+
+An example of the db.txt file is as follows:
+
+```00001 107 3512.43
+00011 323 10292.78
+00117 259 -102.00```
+
 ### STEP 1: Check if there is any existing queue information that could interfere with the program and delete them
 Sometimes when running the program multiple time after hard stops using `CTRL + C` the queues created using msgget are not killed and interfere with the second run. 
 
