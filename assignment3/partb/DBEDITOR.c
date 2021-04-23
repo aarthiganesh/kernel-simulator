@@ -83,7 +83,7 @@ int main(){
 						updateDB(dbArray,numAccounts);
             // UPDATE MESSAGE SENT TO DBSERVER
             strcpy(dataToSend.text,"UPDATE");
-            //EDITOR Sends pin and account info
+            //EDITOR Sends update db
             if(msgsnd(msgidEditor, &dataToSend, sizeof(struct message),0) == -1){
               printf("Error: Sending pin and acct failed\n");
             }
@@ -93,7 +93,7 @@ int main(){
 						strcpy(dbArray[i].pin,inputpin);
 						updateDB(dbArray,numAccounts);
             strcpy(dataToSend.text,"UPDATE");
-            //EDITOR Sends pin and account info
+            //EDITOR Sends update db
             if(msgsnd(msgidEditor, &dataToSend, sizeof(struct message),0) == -1){
               printf("Error: Sending pin and acct failed\n");
             }
@@ -113,14 +113,14 @@ int main(){
 				updateDB(updatedArray,(numAccounts+1));
 
         strcpy(dataToSend.text,"UPDATE");
-        //EDITOR Sends pin and account info
+        //EDITOR Sends update db
         if(msgsnd(msgidEditor, &dataToSend, sizeof(struct message),0) == -1){
           printf("Error: Sending pin and acct failed\n");
         }
 			}
 			numAccounts = 0;
 			actExists =0;
-      
+
       if (!sem_release(sem_id)) exit(EXIT_FAILURE);
     }
 
