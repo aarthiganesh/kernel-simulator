@@ -6,8 +6,11 @@
 #include <sys/msg.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/sem.h>
 
+#include "semun.h"
 #include "message.h"
+#include "semaphores.h"
 
 //defining the queue ids
 #define ATMQUEUE 12345
@@ -25,6 +28,10 @@ struct message dataToSend;
 struct message dataReceived;
 
 void requestinput();
+int validInput (char pin [3], char accountnumber[5]);
+
+// semaphore variables
+static int sem_id;
 
 int main(){
 	int msgidATM;
@@ -32,11 +39,19 @@ int main(){
 
 	msgidATM = msgget((key_t)ATMQUEUE, 0666|IPC_CREAT);
 	msgidServer = msgget((key_t)DBSERVERQUEUE, 0666|IPC_CREAT);
+	sem_id = semget((key_t)1200, 1, 0666 | IPC_CREAT);
+
+	if (!set_semvalue(sem_id)) {
+		fprintf(stderr, "Failed to initialize semaphore\n");
+		exit(EXIT_FAILURE);
+	}
 
 	while(1){
 		requestinput();
 		strcpy(dataToSend.text,"UPDATE");
 		printf("Data sent from ATM to DBSERVER is : %s, %s, %s\n", dataToSend.pin, dataToSend.accountnumber, dataToSend.text);
+
+		if (!sem_wait(sem_id)) exit(EXIT_FAILURE);
 
 		//ATM Sends pin and account info
 		if(msgsnd(msgidATM, &dataToSend, sizeof(struct message),0) == -1){
@@ -72,24 +87,41 @@ int main(){
 			}else if (strcmp(dataReceived.text,"NSF")==0){
 				printf("There are not enough funds on your account to withdraw.\n");
 			}else{
-				printf("----------------TRANSACTION RECIEPT----------------\nAcct Number: %s\nBalance: $%.2f\n", dataReceived.accountnumber, dataReceived.balance);
+				printf("\nTRANSACTION RECIEPT\nAcct Number: %s\nBalance: $%.2f\n\n", dataReceived.accountnumber, dataReceived.balance);
 			}
-
+		}else if (strcmp(dataReceived.text,"DNE")==0){
+			printf("Account does not exist.\n");
 		}
+		if (!sem_release(sem_id)) exit(EXIT_FAILURE);
 
 	}
-
+	del_semvalue(sem_id);
 }
 
 void requestinput(){
-  // REQUEST INPUT DATA FROM ATM USER
-  printf("Enter pin number: ");
-	scanf("%s", inputpin);
-	printf("Enter account number: ");
-	scanf("%s", inputaccount);
+	while(1){
+		// REQUEST INPUT DATA FROM ATM USER
+		printf("Enter account number: ");
+		scanf("%s", inputaccount);
+		printf("Enter pin number: ");
+		scanf("%s", inputpin);
 
-  //READ PIN NUMBER
-	strcpy(dataToSend.pin,inputpin);
-	//READ ACCOUNT NUMBER
-	strcpy(dataToSend.accountnumber,inputaccount);
+		if(validInput(inputpin,inputaccount)==1){
+			//READ PIN NUMBER
+			strcpy(dataToSend.pin,inputpin);
+			//READ ACCOUNT NUMBER
+			strcpy(dataToSend.accountnumber,inputaccount);
+			break;
+		}
+	}
+}
+
+// validates if the format of the pin and acct number is correct
+int validInput (char pin [3], char accountnumber[5]){
+	if (strlen(pin)==3 & strlen(accountnumber)==5){
+		return 1;
+	}else{
+		printf("INVALID INPUT VALUES: Pin must be 3 numbers, account number must be 5 numbers\n\n");
+		return 0;
+	}
 }

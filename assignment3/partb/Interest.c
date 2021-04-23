@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <sys/sem.h>
 
+#include "semaphores.h"
 #include "message.h"
 #include "dbarray.h"
 // A function that terminates when enter key is pressed
@@ -29,17 +30,12 @@ int validInput (char pin[3], char accountnumber[5], float funds);
 // semaphore variables
 static int sem_id;
 
-static int set_semvalue(void);
-static void del_semvalue(void);
-static int sem_wait(void);
-static int sem_release(void);
-
 // The main program creates a delay of 60 seconds so that the interest will be calculated every 60 seconds
 int main()
 {
 	sem_id = semget((key_t)1200, 1, 0666 | IPC_CREAT);
 
-	if (!set_semvalue()) {
+	if (!set_semvalue(sem_id)) {
 		fprintf(stderr, "Failed to initialize semaphore\n");
 		exit(EXIT_FAILURE);
 	}
@@ -50,14 +46,14 @@ int main()
         delay(1000);
         printf("%d seconds have passed\n", i + 1);
 		if(i == 59){
-			if (!sem_wait()) exit(EXIT_FAILURE);
+			if (!sem_wait(sem_id)) exit(EXIT_FAILURE);
       calcNumAcct();
       struct dbarray dbArray[numAccounts];
       readDB(dbArray,numAccounts);
 			addInterest(dbArray,numAccounts);
 			i =0;
       numAccounts =0;
-			if (!sem_release()) exit(EXIT_FAILURE);	
+			if (!sem_release(sem_id)) exit(EXIT_FAILURE);	
 		}
   }
 }
@@ -128,10 +124,12 @@ void addInterest ( struct dbarray dbArray[], int numAccounts){
 			for(int i=0;i< numAccounts ;i++){
 				if(dbArray[i].balance > 0.00){
 					//account has a positive balance 
+					printf("Oldbalance: $%.2f\n",dbArray[i].balance);//DEBUG
 					dbArray[i].balance = dbArray[i].balance * 1.01;
 					printf("New balance: $%.2f\n",dbArray[i].balance);//DEBUG
 				}
 				else if(dbArray[i].balance < 0.00){
+					printf("Oldbalance: $%.2f\n",dbArray[i].balance);//DEBUG
 					dbArray[i].balance = dbArray[i].balance * 1.02;
 					printf("New balance: $%.2f\n",dbArray[i].balance);//DEBUG
 				}
@@ -152,49 +150,4 @@ void delay(int number_of_seconds)
     // looping till required time is not achieved
     while (clock() < start_time + milli_seconds)
         ;
-}
-
-//Set semaphore value
-static int set_semvalue(void)
-{
-	union semun sem_union;
-	sem_union.val = 1;
-	if (semctl(sem_id, 0, SETVAL, sem_union) == -1) return(0);
-	return(1);
-}
-
-//Delete semaphore
-static void del_semvalue(void)
-{
-	union semun sem_union;
-	if (semctl(sem_id, 0, IPC_RMID, sem_union) == -1)
-		fprintf(stderr, "Failed to delete semaphore\n");
-}
-
-//Semaphore wait
-static int sem_wait(void)
-{
-	struct sembuf sem_b;
-	sem_b.sem_num = 0;
-	sem_b.sem_op = -1; /* P() */
-	sem_b.sem_flg = SEM_UNDO;
-	if (semop(sem_id, &sem_b, 1) == -1) {
-		fprintf(stderr, "SEM: wait failed\n");
-		return(0);
-	}
-	return(1);
-}
-
-//Semaphore release
-static int sem_release(void)
-{
-	struct sembuf sem_b;
-	sem_b.sem_num = 0;
-	sem_b.sem_op = 1; /* V() */
-	sem_b.sem_flg = SEM_UNDO;
-	if (semop(sem_id, &sem_b, 1) == -1) {
-		fprintf(stderr, "SEM: failed to release\n");
-		return(0);
-	}
-	return(1);
 }
