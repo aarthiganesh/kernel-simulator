@@ -39,7 +39,61 @@ struct message dataToUpdate;
 // semaphore variables
 static int sem_id;
 
+void printOption(struct message dataReceived){
+	printf("BANKING OPTION: %s\n",dataReceived.text);
+}
 
+void calcNumAcct(){
+	dbfile = fopen("db.txt", "r");
+
+	while(fgets(line[numAccounts], 200, dbfile)) 
+	{
+		numAccounts++;
+	}
+	fclose(dbfile);
+}
+
+void readDB(struct dbarray dbArray[], int numAccounts){
+	
+	dbfile = fopen("db.txt", "r");
+	
+	printf("\nREADING DB FILE CONTENT\n");
+	printf("Number of Accounts: %i\n",numAccounts);
+	for(int i=0;i<numAccounts;i++)
+	{
+			sscanf(line[i] , "%s %s %f\n", dbArray[i].accountnumber, dbArray[i].pin, &dbArray[i].balance);
+			dbArray[i].count=0;
+	}
+
+	fclose(dbfile);
+	printf("\n");
+}
+
+void updateDB(struct dbarray dbArray[], int numAccounts){
+
+	dbfile = fopen("db.txt", "w");
+	// printf("Number of Accounts: %i\n",numAccounts);
+	//Print contents of collection into the file with proper formatting
+	for (int i = 0; i < numAccounts; i++) {
+		fprintf(dbfile, "%s %s %.2f\n", dbArray[i].accountnumber, dbArray[i].pin, dbArray[i].balance);
+	}
+	//Close file and return
+	fclose(dbfile);
+}
+
+void printDB(struct dbarray dbArray[], int numAccounts){
+	dbfile = fopen("db.txt", "r");
+
+	printf("\nCURRENT FILE CONTENTS\n");
+	printf("Number of Accounts: %i\n",numAccounts);
+	for(int i=0;i<numAccounts;i++)
+	{
+			printf("Acct#:%s pin:%s balance: $%.2f\n", dbArray[i].accountnumber, dbArray[i].pin, dbArray[i].balance);//DEBUG
+	}
+
+	fclose(dbfile);
+	printf("END\n\n");
+}
 
 int main()
 {
@@ -53,9 +107,15 @@ int main()
 	char acctnum [6];
 	char pin[3];
 	int temppin;
-
+	pid_t pid;
+	pid_t pidinterest;
 	printf("Hello, DBSERVER\n");
-
+	pid = fork();
+	if(pid == -1){
+		perror("fork failed");
+		exit(1);
+	}
+	if(pid !=0){
 	//this queue will be used to send data from atm to dbserver, dbserver will receive
 	msgidATM = msgget((key_t)ATMQUEUE, 0666|IPC_CREAT);
 	msgidServer = msgget((key_t)DBSERVERQUEUE, 0666|IPC_CREAT);
@@ -122,32 +182,32 @@ int main()
 							}
 
 						// MONEY TRANSFER
-						}else if (strcmp(dataReceived.text,"transfer")==0){
-							printf("TRANSFER ATTEMPT: ");
-							if(dataReceived.withdrawal<=dbArray[i].balance & dbArray[i].balance>0){
-								for(int j=0;j<numAccounts;j++){
-									if(strcmp(dbArray[j].accountnumber,dataReceived.recipient)==0){
-										recipientid=1;
-										dbArray[j].balance = dbArray[j].balance + dataReceived.withdrawal;
-										printf("transfer balance: %f",dbArray[j].balance);
-									}
-								}
-								if(recipientid>0){
-									printf("SUCCESSFUL\n");
-									strcpy(dataToSend.text,"FUNDS_OK");
-									dbArray[i].balance = dbArray[i].balance - dataReceived.withdrawal;
-									dataToSend.balance = dbArray[i].balance;
-									updateDB(dbArray,numAccounts);
-									recipientid=0;
-								}else{
-									printf("Recipient does not exist.");
-									strcpy(dataToSend.text,"DNE");
-								}
-							}else{
-								dataToSend.balance = dbArray[i].balance;
-								strcpy(dataToSend.text,"NSF");
-								printf("UNSUCCESSFUL, NSF\n");
-							}
+						// }else if (strcmp(dataReceived.text,"transfer")==0){
+						// 	printf("TRANSFER ATTEMPT: ");
+						// 	if(dataReceived.withdrawal<=dbArray[i].balance & dbArray[i].balance>0){
+						// 		for(int j=0;j<numAccounts;j++){
+						// 			if(strcmp(dbArray[j].accountnumber,dataReceived.accountnumber)){
+						// 				recipientid=j+1;
+						// 			}
+						// 		}
+						// 		if(recipientid>0){
+						// 			printf("SUCCESSFUL\n");
+						// 			strcpy(dataToSend.text,"FUNDS_OK");
+						// 			dbArray[i].balance = dbArray[i].balance - dataReceived.withdrawal;
+						// 			recipientid = recipientid-1;
+						// 			dbArray[recipientid].balance = dbArray[recipientid].balance + dataReceived.withdrawal;
+						// 			dataToSend.balance = dbArray[i].balance;
+						// 			updateDB(dbArray,numAccounts);
+						// 			recipientid=0;
+						// 		}else{
+						// 			printf("Recipient does not exist.");
+						// 			strcpy(dataToSend.text,"DNE");
+						// 		}
+						// 	}else{
+						// 		dataToSend.balance = dbArray[i].balance;
+						// 		strcpy(dataToSend.text,"NSF");
+						// 		printf("UNSUCCESSFUL, NSF\n");
+						// 	}
 						}else{
 							printf("UNRECOGNIZED BANKING OPTION\n");
 							strcpy(dataToSend.text,"UNKNOWN OPTION");
@@ -193,60 +253,12 @@ int main()
 			printf("\nUPDATED DB\n");
 		}
 	}
-}
-
-void printOption(struct message dataReceived){
-	printf("BANKING OPTION: %s\n",dataReceived.text);
-}
-
-void calcNumAcct(){
-	dbfile = fopen("db.txt", "r");
-
-	while(fgets(line[numAccounts], 200, dbfile)) 
-	{
-		numAccounts++;
+	}else{
+		//pid ==0
+		//interest execv call
+		char *args[] = {"./interest",NULL};
+		execv(args[0],args);
+		
 	}
-	fclose(dbfile);
 }
 
-void readDB(struct dbarray dbArray[], int numAccounts){
-	
-	dbfile = fopen("db.txt", "r");
-	
-	printf("\nREADING DB FILE CONTENT\n");
-	printf("Number of Accounts: %i\n",numAccounts);
-	for(int i=0;i<numAccounts;i++)
-	{
-			sscanf(line[i] , "%s %s %f\n", dbArray[i].accountnumber, dbArray[i].pin, &dbArray[i].balance);
-			dbArray[i].count=0;
-	}
-
-	fclose(dbfile);
-	printf("\n");
-}
-
-void updateDB(struct dbarray dbArray[], int numAccounts){
-
-	dbfile = fopen("db.txt", "w");
-	// printf("Number of Accounts: %i\n",numAccounts);
-	//Print contents of collection into the file with proper formatting
-	for (int i = 0; i < numAccounts; i++) {
-		fprintf(dbfile, "%s %s %.2f\n", dbArray[i].accountnumber, dbArray[i].pin, dbArray[i].balance);
-	}
-	//Close file and return
-	fclose(dbfile);
-}
-
-void printDB(struct dbarray dbArray[], int numAccounts){
-	dbfile = fopen("db.txt", "r");
-
-	printf("\nCURRENT FILE CONTENTS\n");
-	printf("Number of Accounts: %i\n",numAccounts);
-	for(int i=0;i<numAccounts;i++)
-	{
-			printf("Acct#:%s pin:%s balance: $%.2f\n", dbArray[i].accountnumber, dbArray[i].pin, dbArray[i].balance);//DEBUG
-	}
-
-	fclose(dbfile);
-	printf("END\n\n");
-}
