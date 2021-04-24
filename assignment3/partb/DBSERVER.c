@@ -29,6 +29,7 @@ void readDB(struct dbarray dbArray[], int numAccounts);
 void updateDB(struct dbarray dbArray[], int numAccounts);
 void printDB(struct dbarray dbArray[], int numAccounts);
 void calcNumAcct();
+char blockAccount (char account [5]);
 
 // message structs
 struct message dataToSend;
@@ -46,6 +47,10 @@ int main()
 	int msgidServer;
 	int msgidEditor; // DBSERVER <--> DBEDITOR
 	int actExists;
+	int recipient;
+	int recipientid;
+	int pinBlock [100] = {0};//limit of 100 accounts
+	char acctnum [6];
 
 	printf("Hello, DBSERVER\n");
 
@@ -90,9 +95,13 @@ int main()
 						}else{
 							printOption(dataReceived);
 						}
+
+						// RETURN BALANCE
 						if(strcmp(dataReceived.text,"balance")==0 ){
 							printf("sending balance ...\n");
 							dataToSend.balance = dbArray[i].balance;
+						
+						// WITHDRAWAL
 						}else if (strcmp(dataReceived.text,"withdraw")==0 ){
 							printf("WITHDRAWAL ATTEMPT: ");
 							if(dataReceived.withdrawal<=dbArray[i].balance & dbArray[i].balance>0){
@@ -101,16 +110,39 @@ int main()
 								dbArray[i].balance = dbArray[i].balance - dataReceived.withdrawal;
 								dataToSend.balance = dbArray[i].balance;
 								updateDB(dbArray,numAccounts);
-								if(msgsnd(msgidEditor, &dataToSend, sizeof(struct message),0) == -1){
-									printf("ERROR: message not send to editor\n");
-								}else{
-									printf("message sent to editor");
-								}
 							}else{
 								dataToSend.balance = dbArray[i].balance;
 								strcpy(dataToSend.text,"NSF");
 								printf("UNSUCCESSFUL, NSF\n");
 							}
+
+						// MONEY TRANSFER
+						// }else if (strcmp(dataReceived.text,"transfer")==0){
+						// 	printf("TRANSFER ATTEMPT: ");
+						// 	if(dataReceived.withdrawal<=dbArray[i].balance & dbArray[i].balance>0){
+						// 		for(int j=0;j<numAccounts;j++){
+						// 			if(strcmp(dbArray[j].accountnumber,dataReceived.accountnumber)){
+						// 				recipientid=j+1;
+						// 			}
+						// 		}
+						// 		if(recipientid>0){
+						// 			printf("SUCCESSFUL\n");
+						// 			strcpy(dataToSend.text,"FUNDS_OK");
+						// 			dbArray[i].balance = dbArray[i].balance - dataReceived.withdrawal;
+						// 			recipientid = recipientid-1;
+						// 			dbArray[recipientid].balance = dbArray[recipientid].balance + dataReceived.withdrawal;
+						// 			dataToSend.balance = dbArray[i].balance;
+						// 			updateDB(dbArray,numAccounts);
+						// 			recipientid=0;
+						// 		}else{
+						// 			printf("Recipient does not exist.");
+						// 			strcpy(dataToSend.text,"DNE");
+						// 		}
+						// 	}else{
+						// 		dataToSend.balance = dbArray[i].balance;
+						// 		strcpy(dataToSend.text,"NSF");
+						// 		printf("UNSUCCESSFUL, NSF\n");
+						// 	}
 						}else{
 							printf("UNRECOGNIZED BANKING OPTION\n");
 							strcpy(dataToSend.text,"UNKNOWN OPTION");
@@ -130,6 +162,14 @@ int main()
 							printf("%s\n",dbArray[i].accountnumber);
 						}
 						strcpy(dataToSend.text,"PIN_ERROR");
+
+						pinBlock[i] ++;
+
+						if(pinBlock[i]==3){
+							strcpy(&dbArray[i].accountnumber[4],"X");
+							updateDB(dbArray,numAccounts);
+						}
+		
 						if(msgsnd(msgidServer, &dataToSend, sizeof(struct message),0) == -1){
 							printf("ERROR: OK message not sent\n");
 						}
@@ -145,7 +185,7 @@ int main()
 			numAccounts = 0;
 		}
 		if(msgrcv(msgidEditor, &dataReceived, sizeof(struct message),0,IPC_NOWAIT)!= -1){
-			printf("UPDATED DB\n");
+			printf("\nUPDATED DB\n");
 		}
 	}
 }
@@ -183,7 +223,7 @@ void readDB(struct dbarray dbArray[], int numAccounts){
 void updateDB(struct dbarray dbArray[], int numAccounts){
 
 	dbfile = fopen("db.txt", "w");
-	printf("Number of Accounts: %i\n",numAccounts);
+	// printf("Number of Accounts: %i\n",numAccounts);
 	//Print contents of collection into the file with proper formatting
 	for (int i = 0; i < numAccounts; i++) {
 		fprintf(dbfile, "%s %s %.2f\n", dbArray[i].accountnumber, dbArray[i].pin, dbArray[i].balance);

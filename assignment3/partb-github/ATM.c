@@ -6,7 +6,7 @@
 #include <sys/msg.h>
 #include <string.h>
 #include <errno.h>
-#include "semun.h"
+// #include "semun.h"
 #include "message.h"
 #include <sys/shm.h>
 //defining the queue ids
@@ -20,44 +20,44 @@ static int semaphore_p(void);
 static int semaphore_v(void);
 static int sem_id;
 
-static int set_semvalue(void)
-{
-	union semun sem_union;
-	sem_union.val = 1;
-	if (semctl(sem_id, 0, SETVAL, sem_union) == -1) return(0);
-	return(1);
-}
+// static int set_semvalue(void)
+// {
+// 	union semun sem_union;
+// 	sem_union.val = 1;
+// 	if (semctl(sem_id, 0, SETVAL, sem_union) == -1) return(0);
+// 	return(1);
+// }
 
-static void del_semvalue(void)
-{
-	union semun sem_union;
-	if (semctl(sem_id, 0, IPC_RMID, sem_union) == -1)
-	fprintf(stderr,"Failed to delete semaphore\n");
-}
-static int semaphore_p(void)
-{
-	struct sembuf sem_b;
-	sem_b.sem_num = 0;
-	sem_b.sem_op = -1; /* P() */
-	sem_b.sem_flg = SEM_UNDO;
-	if (semop(sem_id, &sem_b, 1) == -1) {
-		fprintf(stderr,"semaphore_p failed\n");
-		return(0);
-	}
-	return(1);
-}
-static int semaphore_v(void)
-{
-	struct sembuf sem_b;
-	sem_b.sem_num = 0;
-	sem_b.sem_op = 1; /* V() */
-	sem_b.sem_flg = SEM_UNDO;
-	if (semop(sem_id, &sem_b, 1) == -1) {
-		fprintf(stderr,"semaphore_v failed\n");
-		return(0);
-	}
-	return(1);
-}
+// static void del_semvalue(void)
+// {
+// 	union semun sem_union;
+// 	if (semctl(sem_id, 0, IPC_RMID, sem_union) == -1)
+// 	fprintf(stderr,"Failed to delete semaphore\n");
+// }
+// static int semaphore_p(void)
+// {
+// 	struct sembuf sem_b;
+// 	sem_b.sem_num = 0;
+// 	sem_b.sem_op = -1; /* P() */
+// 	sem_b.sem_flg = SEM_UNDO;
+// 	if (semop(sem_id, &sem_b, 1) == -1) {
+// 		fprintf(stderr,"semaphore_p failed\n");
+// 		return(0);
+// 	}
+// 	return(1);
+// }
+// static int semaphore_v(void)
+// {
+// 	struct sembuf sem_b;
+// 	sem_b.sem_num = 0;
+// 	sem_b.sem_op = 1; /* V() */
+// 	sem_b.sem_flg = SEM_UNDO;
+// 	if (semop(sem_id, &sem_b, 1) == -1) {
+// 		fprintf(stderr,"semaphore_v failed\n");
+// 		return(0);
+// 	}
+// 	return(1);
+// }
 
 char inputpin[3];
 char inputaccount[5];
@@ -86,25 +86,25 @@ void requestinput(void){
 
 
 int atm(){
-	
+	system();
 	int msgidATM;
 	int msgidServer;
 	int shmid;
 	char (*variable)[20];
 	char *args[] = {"./DBSERVER",NULL};
-	sem_id = semget((key_t)1234,1,0644|IPC_CREAT);
+	// sem_id = semget((key_t)1234,1,0644|IPC_CREAT);
 	msgidATM = msgget((key_t)ATMQUEUE, 0666|IPC_CREAT);
 	msgidServer = msgget((key_t)DBSERVERQUEUE, 0666|IPC_CREAT);
 	key_t key = ftok("shmfile",65);
-	shmid = shmget(key, 1024, 0644|IPC_CREAT);
+	// shmid = shmget(key, 1024, 0644|IPC_CREAT);
 	while(1){
 		
-		if (!set_semvalue()) {
-			fprintf(stderr,"Failed to initialize semaphore\n");
-			exit(EXIT_FAILURE);
-		}
-		sleep(2);
-		if(!semaphore_p()) exit(EXIT_FAILURE);
+		// if (!set_semvalue()) {
+		// 	fprintf(stderr,"Failed to initialize semaphore\n");
+		// 	exit(EXIT_FAILURE);
+		// }
+		// sleep(2);
+		// if(!semaphore_p()) exit(EXIT_FAILURE);
 	
 		
 		//printf("ATM # %d has semaphore\n",getpid());
@@ -143,9 +143,9 @@ int atm(){
 				variable = shmat(shmid,(void*)0,0);
 				printf("would you like a receipt? Enter y for yes or n for no");
 				printf("Enter your choice: \n");
-				scanf("%s",variable);
+				// scanf("%s",variable);
 				
-				printf("Data written in memory: %s\n",variable);
+				// printf("Data written in memory: %s\n",variable);
 				
 			}
 
@@ -162,12 +162,12 @@ int atm(){
 
 		}
 		//detach from shared memory
-		shmdt(variable);
+		// shmdt(variable);
 
 		
-		if(!semaphore_v()) exit(EXIT_FAILURE);
-		 del_semvalue();
-			//break;
+		// if(!semaphore_v()) exit(EXIT_FAILURE);
+		//  del_semvalue();
+		// 	//break;
 	}
 	
 
