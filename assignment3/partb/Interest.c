@@ -44,7 +44,7 @@ int main()
 	for (i = 0; i < 60; i++) {
         // delay of one second
         delay(1000);
-        printf("%d seconds have passed\n", i + 1);
+        // printf("%d seconds have passed\n", i + 1);//DEBUG
 		if(i == 59){
 			if (!sem_wait(sem_id)) exit(EXIT_FAILURE);
       calcNumAcct();
