@@ -139,7 +139,7 @@ void requestinput(){
 int validInput (char pin [3], char accountnumber[5]){
 	if (strlen(pin)==3 & strlen(accountnumber)==5){
 		return 1;
-	}else if(strcmp(accountnumber,"X")){
+	}else if(strcmp(accountnumber,"X")==0){
 		exit(EXIT_FAILURE);
 	}else{
 		printf("INVALID INPUT VALUES: Pin must be 3 numbers, account number must be 5 numbers\n\n");
