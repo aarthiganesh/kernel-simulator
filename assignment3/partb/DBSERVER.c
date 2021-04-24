@@ -84,7 +84,7 @@ int main()
 				if(strcmp(dataReceived.accountnumber,dbArray[i].accountnumber) == 0){
 					strcpy(dataToSend.accountnumber,dbArray[i].accountnumber);
 					actExists = 1;
-					temppin = atoi(dataReceived.pin)+1;
+					temppin = atoi(dataReceived.pin)-1;
 					sprintf(dataReceived.pin,"%i",temppin);
 
 					//pin validation
