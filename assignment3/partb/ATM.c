@@ -49,6 +49,7 @@ int main(){
 
 	while(1){
 		requestinput();
+		
 		strcpy(dataToSend.text,"UPDATE");
 		printf("Data sent from ATM to DBSERVER is : %s, %s, %s\n", dataToSend.pin, dataToSend.accountnumber, dataToSend.text);
 
@@ -136,7 +137,9 @@ void requestinput(){
 
 // validates if the format of the pin and acct number is correct
 int validInput (char pin [3], char accountnumber[5]){
-	if (strlen(pin)==3 & strlen(accountnumber)==5){
+	if(strcmp(inputpin,"X")){
+		exit(EXIT_FAILURE);
+	}else if (strlen(pin)==3 & strlen(accountnumber)==5){
 		return 1;
 	}else{
 		printf("INVALID INPUT VALUES: Pin must be 3 numbers, account number must be 5 numbers\n\n");

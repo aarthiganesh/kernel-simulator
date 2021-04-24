@@ -82,6 +82,7 @@ int main()
 				if(strcmp(dataReceived.accountnumber,dbArray[i].accountnumber) == 0){
 					strcpy(dataToSend.accountnumber,dbArray[i].accountnumber);
 					actExists = 1;
+
 					//pin validation
 					if(strcmp(dataReceived.pin,dbArray[i].pin) == 0){
 						printf("PIN_CORRECT\n");
