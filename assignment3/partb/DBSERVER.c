@@ -122,32 +122,32 @@ int main()
 							}
 
 						// MONEY TRANSFER
-						// }else if (strcmp(dataReceived.text,"transfer")==0){
-						// 	printf("TRANSFER ATTEMPT: ");
-						// 	if(dataReceived.withdrawal<=dbArray[i].balance & dbArray[i].balance>0){
-						// 		for(int j=0;j<numAccounts;j++){
-						// 			if(strcmp(dbArray[j].accountnumber,dataReceived.accountnumber)){
-						// 				recipientid=j+1;
-						// 			}
-						// 		}
-						// 		if(recipientid>0){
-						// 			printf("SUCCESSFUL\n");
-						// 			strcpy(dataToSend.text,"FUNDS_OK");
-						// 			dbArray[i].balance = dbArray[i].balance - dataReceived.withdrawal;
-						// 			recipientid = recipientid-1;
-						// 			dbArray[recipientid].balance = dbArray[recipientid].balance + dataReceived.withdrawal;
-						// 			dataToSend.balance = dbArray[i].balance;
-						// 			updateDB(dbArray,numAccounts);
-						// 			recipientid=0;
-						// 		}else{
-						// 			printf("Recipient does not exist.");
-						// 			strcpy(dataToSend.text,"DNE");
-						// 		}
-						// 	}else{
-						// 		dataToSend.balance = dbArray[i].balance;
-						// 		strcpy(dataToSend.text,"NSF");
-						// 		printf("UNSUCCESSFUL, NSF\n");
-						// 	}
+						}else if (strcmp(dataReceived.text,"transfer")==0){
+							printf("TRANSFER ATTEMPT: ");
+							if(dataReceived.withdrawal<=dbArray[i].balance & dbArray[i].balance>0){
+								for(int j=0;j<numAccounts;j++){
+									if(strcmp(dbArray[j].accountnumber,dataReceived.recipient)==0){
+										recipientid=1;
+										dbArray[j].balance = dbArray[j].balance + dataReceived.withdrawal;
+										printf("transfer balance: %f",dbArray[j].balance);
+									}
+								}
+								if(recipientid>0){
+									printf("SUCCESSFUL\n");
+									strcpy(dataToSend.text,"FUNDS_OK");
+									dbArray[i].balance = dbArray[i].balance - dataReceived.withdrawal;
+									dataToSend.balance = dbArray[i].balance;
+									updateDB(dbArray,numAccounts);
+									recipientid=0;
+								}else{
+									printf("Recipient does not exist.");
+									strcpy(dataToSend.text,"DNE");
+								}
+							}else{
+								dataToSend.balance = dbArray[i].balance;
+								strcpy(dataToSend.text,"NSF");
+								printf("UNSUCCESSFUL, NSF\n");
+							}
 						}else{
 							printf("UNRECOGNIZED BANKING OPTION\n");
 							strcpy(dataToSend.text,"UNKNOWN OPTION");

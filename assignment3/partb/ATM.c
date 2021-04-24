@@ -74,23 +74,21 @@ int main(){
 				printf("Amount to withdraw: $");
 				scanf("%f", &withdrawamount);
 				dataToSend.withdrawal = withdrawamount;
-			}
-
-			// if(strcmp(bankingoption,"transfer")==0){
-			// 	while(1){
-			// 		printf("Amount to transfer: $");
-			// 		scanf("%f", &withdrawamount);
-			// 		printf("Account Number of Recipient: $");
-			// 		scanf("%s", recacct);
+			}else if(strcmp(bankingoption,"transfer")==0){
+				while(1){
+					printf("Amount to transfer: $");
+					scanf("%f", &withdrawamount);
+					printf("Account Number of Recipient: $");
+					scanf("%s", recacct);
 					
 
-			// 		if(strlen(recacct)==5 & withdrawamount>0){
-			// 			dataToSend.withdrawal = withdrawamount;
-			// 			strcpy(dataToSend.accountnumber,recacct);
-			// 			break;
-			// 		}
-			// 	}
-			// }
+					if(strlen(recacct)==5 & withdrawamount>0){
+						dataToSend.withdrawal = withdrawamount;
+						strcpy(dataToSend.recipient,recacct);
+						break;
+					}
+				}
+			}
 			
 
 			if(msgsnd(msgidATM, &dataToSend, sizeof(struct message),0) == -1){
