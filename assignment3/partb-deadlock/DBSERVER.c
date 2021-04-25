@@ -200,6 +200,7 @@ int main()
 									updateDB(dbArray,numAccounts);
 									recipientid=0;
 								}else{
+									strcpy(dataToSend.text,"DNE");
 									printf("Recipient does not exist.");
 									strcpy(dataToSend.text,"DNE");
 								}

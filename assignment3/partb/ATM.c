@@ -81,7 +81,6 @@ int main(){
 					printf("Account Number of Recipient: $");
 					scanf("%s", recacct);
 					
-
 					if(strlen(recacct)==5 & withdrawamount>0){
 						dataToSend.withdrawal = withdrawamount;
 						strcpy(dataToSend.recipient,recacct);
@@ -103,6 +102,8 @@ int main(){
 				printf("Urecognized Banking Option, please enter one of the following optoins:\n\tbalane\n\twithdraw\n");
 			}else if (strcmp(dataReceived.text,"NSF")==0){
 				printf("There are not enough funds on your account for this transaction.\n");
+			}else if (strcmp(dataReceived.text,"DNE")==0){
+				printf("Recipient account does not exist.\n");
 			}else{
 				printf("\nTRANSACTION RECIEPT\nAcct Number: %s\nBalance: $%.2f\n\n", dataReceived.accountnumber, dataReceived.balance);
 			}

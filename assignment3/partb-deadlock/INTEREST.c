@@ -120,18 +120,18 @@ void printDB(struct dbarray dbArray[], int numAccounts){
 }
 
 void addInterest ( struct dbarray dbArray[], int numAccounts){
-			printf("----Interest-----\n");
+			printf("\nINTEREST NEW BALANCE\n");
 			for(int i=0;i< numAccounts ;i++){
 				if(dbArray[i].balance > 0.00){
 					//account has a positive balance 
 					// printf("Oldbalance: $%.2f\n",dbArray[i].balance);//DEBUG
 					dbArray[i].balance = dbArray[i].balance * 1.01;
-					printf("New balance: $%.2f\n",dbArray[i].balance);//DEBUG
+					printf("Account #%s: $%.2f\n",dbArray[i].accountnumber, dbArray[i].balance);//DEBUG
 				}
 				else if(dbArray[i].balance < 0.00){
 					// printf("Oldbalance: $%.2f\n",dbArray[i].balance);//DEBUG
 					dbArray[i].balance = dbArray[i].balance * 1.02;
-					printf("New balance: $%.2f\n",dbArray[i].balance);//DEBUG
+					printf("Account #%s: $%.2f\n",dbArray[i].accountnumber, dbArray[i].balance);//DEBUG
 				}
 			}
       updateDB(dbArray,numAccounts);
