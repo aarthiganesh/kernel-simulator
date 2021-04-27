@@ -105,7 +105,6 @@ int main()
 	int recipientid;
 	int pinBlock [100] = {0};//limit of 100 accounts
 	char acctnum [6];
-	char pin[3];
 	int temppin;
 	pid_t pid;
 	pid_t pidinterest;
@@ -144,6 +143,7 @@ int main()
 				if(strcmp(dataReceived.accountnumber,dbArray[i].accountnumber) == 0){
 					strcpy(dataToSend.accountnumber,dbArray[i].accountnumber);
 					actExists = 1;
+					// DECRYPTOIN: ADDING ONE TO PIN
 					temppin = atoi(dataReceived.pin)-1;
 					sprintf(dataReceived.pin,"%i",temppin);
 

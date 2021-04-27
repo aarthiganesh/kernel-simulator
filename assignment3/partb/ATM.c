@@ -78,7 +78,7 @@ int main(){
 				while(1){
 					printf("Amount to transfer: $");
 					scanf("%f", &withdrawamount);
-					printf("Account Number of Recipient: $");
+					printf("Account Number of Recipient: ");
 					scanf("%s", recacct);
 					
 					if(strlen(recacct)==5 & withdrawamount>0){

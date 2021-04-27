@@ -22,7 +22,7 @@ FILE *dbfile = NULL;
 char line [128][100];
 int numAccounts = 0;
 
-char inputpin[3];
+char inputpin[5];
 char inputaccount[5];
 float funds;
 
@@ -44,6 +44,7 @@ static int sem_id;
 
 int main(){
 	int msgidEditor;
+	int temppin;
 
 	msgidEditor = msgget((key_t)ATMQUEUE, 0666|IPC_CREAT);
 	sem_id = semget((key_t)1200, 1, 0666 | IPC_CREAT);
@@ -67,6 +68,9 @@ int main(){
       int actExists = 0;
       if (!sem_wait(sem_id)) exit(EXIT_FAILURE);
 
+			// subtract 1 to input pin for encyryption
+			temppin = atoi(inputpin) - 1;
+			sprintf(inputpin,"%i",temppin);
 
       calcNumAcct();
       struct dbarray dbArray[numAccounts];
@@ -101,7 +105,7 @@ int main(){
 				}
 			}
 
-      	// account does not exist
+      // account does not exist
 			if (actExists==0){
 				struct dbarray updatedArray [numAccounts+1];
 				for(int i=0;i<numAccounts;i++){
