@@ -7,6 +7,7 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/sem.h>
+#include <time.h>
 
 #include "semaphores.h"
 #include "message.h"
@@ -29,6 +30,7 @@ void readDB(struct dbarray dbArray[], int numAccounts);
 void updateDB(struct dbarray dbArray[], int numAccounts);
 void printDB(struct dbarray dbArray[], int numAccounts);
 void calcNumAcct();
+void delay(int number_of_seconds);
 char blockAccount (char account [5]);
 
 // message structs
@@ -55,8 +57,6 @@ void calcNumAcct(){
 
 void readDB(struct dbarray dbArray[], int numAccounts){
 	
-	dbfile = fopen("db.txt", "r");
-	
 	printf("\nREADING DB FILE CONTENT\n");
 	printf("Number of Accounts: %i\n",numAccounts);
 	for(int i=0;i<numAccounts;i++)
@@ -70,10 +70,7 @@ void readDB(struct dbarray dbArray[], int numAccounts){
 }
 
 void updateDB(struct dbarray dbArray[], int numAccounts){
-
 	dbfile = fopen("db.txt", "w");
-	// printf("Number of Accounts: %i\n",numAccounts);
-	//Print contents of collection into the file with proper formatting
 	for (int i = 0; i < numAccounts; i++) {
 		fprintf(dbfile, "%s %s %.2f\n", dbArray[i].accountnumber, dbArray[i].pin, dbArray[i].balance);
 	}
@@ -108,12 +105,14 @@ int main()
 	int temppin;
 	pid_t pid;
 	pid_t pidinterest;
+
 	printf("Hello, DBSERVER\n");
 	pid = fork();
 	if(pid == -1){
 		perror("fork failed");
 		exit(1);
 	}
+	
 	if(pid !=0){
 	//this queue will be used to send data from atm to dbserver, dbserver will receive
 	msgidATM = msgget((key_t)ATMQUEUE, 0666|IPC_CREAT);
@@ -129,8 +128,6 @@ int main()
 
 		//RECEIVE MESSAGE FROM ATM
 		if(msgrcv(msgidATM, &dataReceived, sizeof(struct message),0,IPC_NOWAIT)!= -1){
-		// 	// printf("Error msgrcv failed");	
-		// }else{
 			printf("\nPIN and ACCT received\n");
 			actExists = 0;
 			// read the db
@@ -143,7 +140,7 @@ int main()
 				if(strcmp(dataReceived.accountnumber,dbArray[i].accountnumber) == 0){
 					strcpy(dataToSend.accountnumber,dbArray[i].accountnumber);
 					actExists = 1;
-					// DECRYPTOIN: ADDING ONE TO PIN
+					// DECRYPTION: ADDING ONE TO PIN
 					temppin = atoi(dataReceived.pin)-1;
 					sprintf(dataReceived.pin,"%i",temppin);
 
@@ -160,6 +157,9 @@ int main()
 						}else{
 							printOption(dataReceived);
 						}
+
+						//DEADLOCK CREATION 
+						delay(30000);//long wait time added so that the ATM holds the database resource for a long time
 
 						// RETURN BALANCE
 						if(strcmp(dataReceived.text,"balance")==0 ){
@@ -249,11 +249,23 @@ int main()
 		}
 	}
 	}else{
-		//pid ==0
-		//interest execv call
 		char *args[] = {"./interest",NULL};
 		execv(args[0],args);
 		
 	}
+}
+
+void delay(int number_of_seconds)
+
+{
+    // Converting time into milli_seconds
+    int milli_seconds = 1000 * number_of_seconds;
+  
+    // Storing start time
+    clock_t start_time = clock();
+  
+    // looping till required time is not achieved
+    while (clock() < start_time + milli_seconds)
+        ;
 }
 

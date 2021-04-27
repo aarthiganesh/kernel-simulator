@@ -1,0 +1,22 @@
+Example of state log when deadlock occurs
+READY = process is ready, waiting for input
+S.WAIT = semahpore waiting
+S.RELEASE = semaphore release
+--------------------------------------------------------------------------------
+
+PROCESS   STATE
+ATM1      READY
+ATM2      READY
+DBSERVER  READY
+DBEDITOR  READY
+INTEREST  READY
+ATM1      S.WAIT       <- waiting in semaphore queue
+ATM1      PROCESSING   <- locks all other processes from accessing the DB
+ATM2      S.WAIT
+DBSERVER  PROCESSING   <- processing request from ATM1
+INTEREST  S.WAIT       <- waiting in semaphore queue
+DBEDITOR  S.WAIT       <- waiting in semaphore queue
+ATM1      S.RELEASE      <- NO OTHER PROCESSES WERE ABLE TO RUN UNTIL THIS POINT
+DBSERVER  READY         <- waitng for instructions
+ATM2      PROCESSING
+DBSERVER  PROCESSING

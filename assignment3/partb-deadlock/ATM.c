@@ -110,6 +110,7 @@ int main(){
 		}else if (strcmp(dataReceived.text,"DNE")==0){
 			printf("Account does not exist.\n");
 		}
+
 		if (!sem_release(sem_id)) exit(EXIT_FAILURE);
 
 	}
